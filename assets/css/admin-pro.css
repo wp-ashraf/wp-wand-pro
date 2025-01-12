@@ -1,0 +1,290 @@
+.wpwand-settings a.wpwand-get-pro-button {
+    display: none;
+}
+
+a.wpwand-btn {
+    text-decoration: none;
+    color: #FFF;
+    text-align: center;
+
+    /* Semi-bold/13px */
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    border-radius: 8px;
+    background: var(--primary-main, var(--wpwand-brand-color));
+    line-height: 21px;
+    /* 150% */
+    padding: 12px 16px;
+}
+
+.wpwand-nasted-header-wrap {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.wpwand-nasted-header-wrap .wpwand-tab-header h4 {
+    /* margin-top: 0; */
+}
+
+.wpwand-nasted-header-wrap .wpwand-tab-header p {
+    margin-bottom: 0;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal {
+    width: 650px;
+    border-radius: 16px;
+    background: var(--neutral-01, #FFF);
+    padding: 24px 40px 40px 40px;
+    text-align: left;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal #swal2-title {
+    color: var(--neutral-07, #080E13);
+
+    /* Headline/H4 */
+    font-family: Inter;
+    font-size: 21px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px;
+    /* 152.381% */
+    letter-spacing: -0.3px;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal div#swal2-html-container {
+    text-align: left;
+    margin: 25px 0 0;
+    overflow: unset;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal label.swal2-input-label {
+    margin: 0;
+    justify-content: flex-start;
+    color: var(--neutral-07, #080E13);
+
+    /* Body/14px/Bold */
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 20px;
+    /* 142.857% */
+    margin-bottom: 8px;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal .swal2-input {
+    margin: 0;
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 8px;
+    border: 1px solid #EAEDF0;
+    background: #FFF;
+    color: #454F5C;
+    /* Body/14px/Regular */
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    /* 142.857% */
+    height: 48px;
+    margin-bottom: 15px;
+    box-shadow: unset;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal .swal2-input::placeholder {
+    color: #7C838A;
+
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal textarea.swal2-input {
+    min-height: 160px;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal div#swal2-html-container>p {
+    color: #454F5C;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.wpwand-highlight {
+    color: var(--wpwand-brand-color);
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal .swal2-actions {
+    margin: 0;
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal .swal2-actions button {
+    width: 100%;
+    border-radius: 8px;
+    background: var(--primary-main, var(--wpwand-brand-color));
+    padding: 14px 0px;
+    color: #FFF;
+    text-align: center;
+
+    /* Body/14px/Bold */
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 20px;
+    /* 142.857% */
+}
+
+.swal2-popup.swal2-modal.wpwand_form_modal div#swal2-validation-message {
+    margin: 0 0 15px;
+    text-align: left;
+    justify-content: flex-start;
+    padding: 5px;
+    color: var(--neutral-05, #454F5C);
+
+    /* Body/14px/Regular */
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    /* 142.857% */
+    background-color: #e3101012;
+    border-radius: 4px;
+}
+
+
+.swal2-popup.swal2-modal.wpwand_form_modal button.swal2-close {
+    width: 22px;
+    height: 22px;
+    margin-top: 7px;
+}
+
+.wpwand-table-wrap table.wp-list-table th:first-child,
+.wpwand-table-wrap table.wp-list-table td:first-child {
+    padding-left: 0;
+}
+
+.wpwand-table-wrap table.wp-list-table th:last-child,
+.wpwand-table-wrap table.wp-list-table td:last-child {
+    padding-right: 0;
+}
+
+.wpwand-history-page table.wp-list-table th.manage-column.wpwand-select-post {
+    padding: 0;
+    padding-left: 10px;
+}
+
+.wpwand-history-page table.wp-list-table td.wpwand-select-post {
+    padding: 0 9px;
+    padding-top: 15px;
+}
+
+/* Bulk Action Styles */
+.wpwand-history-bulk-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.wpwand-history-bulk-action select {
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: 1px solid #EAEDF0;
+    background: #FFF url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23454F5C%22%2F%3E%3C%2Fsvg%3E') no-repeat right 16px center;
+    background-size: 16px 16px;
+    color: #454F5C;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    min-width: 148px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.wpwand-history-bulk-action select:hover {
+    border-color: var(--wpwand-brand-color);
+}
+
+.wpwand-history-bulk-action select:focus {
+    border-color: var(--wpwand-brand-color);
+    outline: none;
+    box-shadow: 0 0 0 1px var(--wpwand-brand-color);
+}
+
+.wpwand-history-bulk-action .wpwand-history-btn.action {
+    padding: 9px 16px;
+    border-radius: 5px;
+    background: var(--wpwand-brand-color);
+    color: #FFF;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.wpwand-history-bulk-action .wpwand-history-btn.action:hover {
+    background: #2952cc;
+}
+
+.wpwand-history-bulk-action .wpwand-history-btn.action:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(55, 103, 251, 0.2);
+}
+
+/* Checkbox styles */
+.wpwand-select-post input[type="checkbox"] {
+    border: 1.5px solid #EAEDF0;
+    border-radius: 4px;
+    background: #FFF;
+    cursor: pointer;
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    min-width: 16px;
+    margin: 0;
+    vertical-align: middle;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: all 0.2s ease;
+}
+
+.wpwand-select-post input[type="checkbox"]:checked {
+    background: var(--wpwand-brand-color);
+    border-color: var(--wpwand-brand-color);
+}
+
+.wpwand-select-post input[type="checkbox"]:checked::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    margin: 2px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23ffffff" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.wpwand-select-post input[type="checkbox"]:focus {
+    border-color: var(--wpwand-brand-color);
+    box-shadow: 0 0 0 2px rgba(55, 103, 251, 0.2);
+    outline: none;
+}
