@@ -263,6 +263,16 @@ class Post_Generator
 
                     $Parsedown = new \Parsedown();
 
+                    if (empty($reply)) {
+                        $args = [
+                            'title' => $title,
+                            'content' => '',
+                            'post_id' => '',
+                            'status' => 'failed',
+                        ];
+                        return $this->update_data($args, $id);
+                    }
+
                     $args = [
                         'title' => $title,
                         'content' => $Parsedown->text($reply),
@@ -271,7 +281,7 @@ class Post_Generator
                     ];
                     update_option('wpwand_schedule_working', $args);
 
-                    $this->update_data($args, $id);
+                    return $this->update_data($args, $id);
                 }
             } elseif (isset($content->error)) {
                 return false;
@@ -279,6 +289,7 @@ class Post_Generator
             update_option('wpwand_schedule_working', $title);
         }
         update_option('wpwand_schedule_working', 'failed');
+        return false;
     }
 
     public function generation_progress()
@@ -456,7 +467,11 @@ class Post_Generator
                     update_option('wpwand_restart_needed', false);
                 }
 
-                if ((isset($actions_data['status']) && 'failed' == $actions_data['status']) && (4 >= $start_count || $force_restart)) {
+                if ($row['status'] == 'failed') {
+                    update_option('wpwand_restart_needed', true);
+                }
+
+                if (((isset($actions_data['status']) && 'failed' == $actions_data['status']) || $row['status'] == 'failed') && (4 >= $start_count || $force_restart)) {
                     update_option('wpwand_restart_needed', false);
 
                     $args = json_decode($actions_data['extended_args'], true);
