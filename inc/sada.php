@@ -106,18 +106,18 @@ class WPWAND_PRO_WHITE_LABEL
             [
                 'type' => 'file',
                 'name' => 'logo',
-                'label' => 'Upload Logo',
-                'desc' => 'Upload your logo',
-                'placeholder' => 'Add a custom link or click on upload button',
+                'label' => __('Upload Logo', 'wp-wand-pro'),
+                'desc' => __('Upload your logo', 'wp-wand-pro'),
+                'placeholder' => __('Add a custom link or click on upload button', 'wp-wand-pro'),
                 'default' => WPWAND_PLUGIN_URL . 'assets/img/logo.svg',
 
             ],
             [
                 'type' => 'file',
                 'name' => 'logo_icon',
-                'label' => 'Logo Icon',
-                'desc' => 'Upload your logo icon',
-                'placeholder' => 'Add a custom link or click on upload button',
+                'label' => __('Logo Icon', 'wp-wand-pro'),
+                'desc' => __('Upload your logo icon', 'wp-wand-pro'),
+                'placeholder' => __('Add a custom link or click on upload button', 'wp-wand-pro'),
                 'default' => WPWAND_PLUGIN_URL . 'assets/img/icon.svg',
 
             ],
@@ -125,46 +125,46 @@ class WPWAND_PRO_WHITE_LABEL
             [
                 'type' => 'text',
                 'name' => 'brand_name',
-                'label' => 'Brand Name',
-                'desc' => 'Write your brand name',
-                'placeholder' => 'WP Wand',
+                'label' => __('Brand Name', 'wp-wand-pro'),
+                'desc' => __('Write your brand name', 'wp-wand-pro'),
+                'placeholder' => __('WP Wand', 'wp-wand-pro'),
 
             ],
             [
                 'type' => 'color',
                 'name' => 'brand_color',
-                'label' => 'Brand Color',
+                'label' => __('Brand Color', 'wp-wand-pro'),
                 'default' => '#3767fb',
-                'desc' => 'Select your brand color',
+                'desc' => __('Select your brand color', 'wp-wand-pro'),
                 'placeholder' => '',
 
             ],
             [
                 'type' => 'text',
                 'name' => 'plugin_name',
-                'label' => 'Plugin Name',
-                'desc' => 'Write your plugin name',
-                'placeholder' => 'WP Wand',
+                'label' => __('Plugin Name', 'wp-wand-pro'),
+                'desc' => __('Write your plugin name', 'wp-wand-pro'),
+                'placeholder' => __('WP Wand', 'wp-wand-pro'),
             ],
             [
                 'type' => 'text',
                 'name' => 'plugin_description',
-                'label' => 'Plugin Description',
-                'desc' => 'Write your plugin description',
-                'placeholder' => 'WP Wand is a AI content generation plugin for WordPress that helps your team create high quality content 10X faster and 50x cheaper. No monthly subscription required.',
+                'label' => __('Plugin Description', 'wp-wand-pro'),
+                'desc' => __('Write your plugin description', 'wp-wand-pro'),
+                'placeholder' => __('WP Wand is a AI content generation plugin for WordPress that helps your team create high quality content 10X faster and 50x cheaper. No monthly subscription required.', 'wp-wand-pro'),
             ],
             [
                 'type' => 'text',
                 'name' => 'author_name',
-                'label' => 'Author Name',
-                'desc' => 'Write your author name',
-                'placeholder' => 'WP Wand',
+                'label' => __('Author Name', 'wp-wand-pro'),
+                'desc' => __('Write your author name', 'wp-wand-pro'),
+                'placeholder' => __('WP Wand', 'wp-wand-pro'),
             ],
             [
                 'type' => 'text',
                 'name' => 'author_url',
-                'label' => 'Author Url',
-                'desc' => 'Write your author URL',
+                'label' => __('Author Url', 'wp-wand-pro'),
+                'desc' => __('Write your author URL', 'wp-wand-pro'),
                 'placeholder' => 'https://wpwand.com',
             ],
         ];
@@ -190,8 +190,7 @@ class WPWAND_PRO_WHITE_LABEL
                 <h4>
                     <?php esc_html_e('White Label', 'wp-wand-pro'); ?>
                 </h4>
-                <p class="wpwand-field-desc">You can change all branding and public info of WP Wand to use it as your own on
-                    client’s website</p>
+                <p class="wpwand-field-desc"><?php _e('You can change all branding and public info of WP Wand to use it as your own on client’s website', 'wp-wand-pro'); ?></p>
             </div>
             <table class="form-table">
                 <?php if ($all_fields):
@@ -219,7 +218,7 @@ class WPWAND_PRO_WHITE_LABEL
                                                 placeholder="<?php echo esc_html($field['placeholder']); ?>"
                                                 value="<?php echo wpwand_get_option($field_name, $default_val); ?>">
                                             <button id="<?php echo esc_html($field_name); ?>-upload-button"
-                                                class="wpwand-upload-button">Upload</button>
+                                                class="wpwand-upload-button"><?php _e('Upload', 'wp-wand-pro'); ?></button>
                                             <div class="wpwand-upload-preview">
                                                 <span class="wpwand-img-preview-remove">x</span>
                                                 <img src="<?php echo wpwand_get_option($field_name, $default_val) ?>" alt="">
@@ -250,8 +249,7 @@ class WPWAND_PRO_WHITE_LABEL
                         <label for="wpwand_white_label_disable">
                             <?php esc_html_e('Disable White Label Tab', 'wp-wand-pro'); ?>
                         </label>
-                        <span class="wpwand-field-desc">You can enable White Label tab again after disabling and enabling the
-                            Pro plugin.</span>
+                        <span class="wpwand-field-desc"><?php _e('You can enable White Label tab again after disabling and enabling the Pro plugin.', 'wp-wand-pro'); ?></span>
                     </th>
 
                     <td class="wpwand-field">

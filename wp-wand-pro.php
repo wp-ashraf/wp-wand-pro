@@ -4,7 +4,7 @@
  * Plugin Name: WP Wand Pro
  * Plugin URI: https://wpwand.com/
  * Description: WP Wand Pro allows you to use the full potential of WP Wand with tons of extra features for quality content generation.
- * Version: 1.2.3
+ * Version: 1.2.7
  * Author: WP Wand
  * Author URI: https://wpwand.com/
  * Text Domain: wp-wand-pro
@@ -30,13 +30,16 @@ function wpwand_pro_loaded()
 {
     require __DIR__ . '/vendor/action-scheduler/action-scheduler.php';
     require __DIR__ . '/vendor/action-scheduler/action-scheduler-high-volume.php';
+
+    add_action('init', 'wpwand_pro_load_plugin', 15);
 }
-add_action('plugins_loaded', 'wpwand_pro_loaded', -10);
+add_action('wpwand_init', 'wpwand_pro_loaded', 10);
 
 
 function wpwand_pro_load_plugin()
 {
 
+    $updatechecker = null;
     define('WPWAND_PRO_VERSION', get_plugin_data(__FILE__)['Version']);
 
     if (!did_action('wpwand_init')) {
@@ -51,12 +54,7 @@ function wpwand_pro_load_plugin()
         return;
     }
 
-    // Add version compatibility check
-    if (defined('WPWAND_VERSION') && version_compare(WPWAND_VERSION, '1.2.8', '<')) {
-        add_action('admin_notices', 'wpwand_pro_version_compatibility_notice');
 
-        return;
-    }
     require_once WPWAND_PRO_PLUGIN_DIR . 'inc/db.php';
 
     // Vendor Autoload
@@ -84,14 +82,16 @@ function wpwand_pro_load_plugin()
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/sada.php';
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/WooCommerce.php';
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/api.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/post-generator.php';
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/history.php';
+        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/post-generator.php';
     }
 
-    new WPWandUdChecker();
+    if ($updatechecker === null) {
+
+        $updatechecker = new WPWandUdChecker();
+    }
 }
 
-add_action('plugins_loaded', 'wpwand_pro_load_plugin', 999);
 
 function wpwand_pro_init()
 {

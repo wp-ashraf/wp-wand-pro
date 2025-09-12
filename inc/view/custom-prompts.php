@@ -1,7 +1,7 @@
 <div id="custom-pro" class="tab-panel" style="display:none;">
     <div class="wpwand-nasted-tabs">
-        <a href="" class="active" data-id="wpwand-ntd-tab-templates">Custom Prompt Template</a>
-        <a href="" data-id="wpwand-ntd-tab-aichar">AI Character</a>
+        <a href="" class="active" data-id="wpwand-ntd-tab-templates"><?php _e('Custom Prompt Template', 'wp-wand-pro'); ?></a>
+        <a href="" data-id="wpwand-ntd-tab-aichar"><?php _e('AI Character', 'wp-wand-pro'); ?></a>
     </div>
 
     <div class="wpwand-nasted-item active" id="wpwand-ntd-tab-templates">
@@ -11,10 +11,10 @@
                 <h4>
                     <?php esc_html_e('Custom Prompt Templates', 'wp-wand-pro'); ?>
                 </h4>
-                <p class="\">Create your own AI Character template and use it generate quality content. If you don’t see it in the template list, make sure to refresh the page.</p>
+                <p class="\"><?php _e('Create your own AI Character template and use it generate quality content. If you don’t see it in the template list, make sure to refresh the page.', 'wp-wand-pro'); ?></p>
 
             </div>
-            <a href="" class="wpwand-btn wpwand-prompt-add">Add New Template</a>
+            <a href="" class="wpwand-btn wpwand-prompt-add"><?php _e('Add New Template', 'wp-wand-pro'); ?></a>
         </div>
 
 
@@ -23,7 +23,7 @@
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
-                            <th class="manage-column" width="40%">Template Name</th>
+                            <th class="manage-column" width="40%"><?php _e('Template Name', 'wp-wand-pro'); ?></th>
                             <th class="manage-column"></th>
                         </tr>
                     </thead>
@@ -43,7 +43,7 @@
                                     </td>
 
                                     <td class="wpwand-table-action">
-                                        <a href="" class="wpwand-table-btn   ">
+                                        <a href="" class="wpwand-table-btn wpwand-promtmpt-edit">
                                             <?php echo esc_html__('Edit', 'wp-wand-pro') ?>
                                         </a>
                                         <a href="" class="wpwand-table-btn delete wpwand-promtmpt-delete">

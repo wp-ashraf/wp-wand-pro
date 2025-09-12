@@ -32,16 +32,14 @@ $data = $wpdb->get_results($query, ARRAY_A);
 
 <div class="wrap wpwand-history-page" id="wpwand-bulk-post-generator">
 
-    <h1>Bulk Posts <small>Beta 1.0.1</small></h1>
+    <h1><?php _e('Bulk Posts', 'wp-wand-pro'); ?> <small><?php _e('Beta 1.0.1', 'wp-wand-pro'); ?></small></h1>
     <!-- <div class="wpwand-bulk-generation-info"> -->
 
     <?php if (wpwand_pgs_rate_limi()): ?>
         <a class="wpwand-pgdc-create-button"
-            href="<?php echo admin_url('admin.php?page=wpwand-post-generator&generate-post') ?>">Create Bulk Posts</a>
+            href="<?php echo admin_url('admin.php?page=wpwand-post-generator&generate-post') ?>"><?php _e('Create Bulk Posts', 'wp-wand-pro'); ?></a>
     <?php else: ?>
-        <a class="wpwand-pgdc-create-button locked" href="https://wpwand.com/pro-plugin" target="_blank">Upgrade for
-            Unlimited Bulk
-            Generation</a>
+        <a class="wpwand-pgdc-create-button locked" href="https://wpwand.com/pro-plugin" target="_blank"><?php _e('Upgrade for Unlimited Bulk Generation', 'wp-wand-pro'); ?></a>
     <?php endif; ?>
     <?php $this->limit_text(); ?>
 
@@ -50,8 +48,8 @@ $data = $wpdb->get_results($query, ARRAY_A);
 
     <div class="wpwand-pgdc-wrap">
         <?php if ($restart_queue): ?>
-            <p style="float:right;">BUlk generation failed? try to <a
-                    href="<?php echo admin_url('admin.php?page=wpwand-post-generator&restart-queue') ?>">Restart Queue</a></p>
+            <p style="float:right;"><?php _e('Bulk generation failed? try to', 'wp-wand-pro'); ?> <a
+                    href="<?php echo admin_url('admin.php?page=wpwand-post-generator&restart-queue') ?>"><?php _e('Restart Queue', 'wp-wand-pro'); ?></a></p>
         <?php endif; ?>
         <?php if ($data): ?>
             <div class=" wpwand-pgdc-page">
@@ -126,9 +124,9 @@ $data = $wpdb->get_results($query, ARRAY_A);
                         </svg>
                         <div class="wpwand-pgdc-header-content">
                             <h1>
-                                Generating Bulk Post...
+                                <?php _e('Generating Bulk Post...', 'wp-wand-pro'); ?>
                             </h1>
-                            <p>You can leave this page if you want. Posts are generating in the background.</p>
+                            <p><?php _e('You can leave this page if you want. Posts are generating in the background.', 'wp-wand-pro'); ?></p>
                         </div>
                     </div>
                 <?php else: ?>
@@ -140,20 +138,20 @@ $data = $wpdb->get_results($query, ARRAY_A);
                 <form action="" method="post">
                     <div class="wpwand-history-bulk-action">
                         <select name="wpwand-bulk-action-top" id="bulk-action-selector-top">
-                            <option value="-1">Bulk actions</option>
-                            <option value="approve">Approve</option>
-                            <option value="delete">Delete</option>
+                            <option value="-1"><?php _e('Bulk actions', 'wp-wand-pro'); ?></option>
+                            <option value="approve"><?php _e('Approve', 'wp-wand-pro'); ?></option>
+                            <option value="delete"><?php _e('Delete', 'wp-wand-pro'); ?></option>
                         </select>
-                        <input type="submit" name="doaction" id="doaction" class="wpwand-history-btn action" value="Apply">
+                        <input type="submit" name="doaction" id="doaction" class="wpwand-history-btn action" value="<?php _e('Apply', 'wp-wand-pro'); ?>">
                     </div>
                     <table class="wp-list-table widefat fixed striped">
                         <thead>
                             <tr>
                                 <th class="manage-column wpwand-select-post" width="2%"><input type="checkbox" id="wpwand-select-all" name="wpwand-select-all"></th>
-                                <th class="manage-column" width="20%">Title</th>
-                                <th class="manage-column" width="30%">Content</th>
-                                <th class="manage-column">Creation Date</th>
-                                <th class="manage-column">Status</th>
+                                <th class="manage-column" width="20%"><?php _e('Title', 'wp-wand-pro'); ?></th>
+                                <th class="manage-column" width="30%"><?php _e('Content', 'wp-wand-pro'); ?></th>
+                                <th class="manage-column"><?php _e('Creation Date', 'wp-wand-pro'); ?></th>
+                                <th class="manage-column"><?php _e('Status', 'wp-wand-pro'); ?></th>
                                 <th class="manage-column" width="20%"></th>
                             </tr>
                         </thead>
@@ -205,10 +203,10 @@ $data = $wpdb->get_results($query, ARRAY_A);
                                             class="wpwand-history-btn ">
                                             <?php echo 'View' ?>
                                         </a>
-                                        <a href="<?php echo admin_url('admin.php?page=wpwand-post-generator&action=wpwand-post-approve&id=' . $row['id']) ?>" class="wpwand-history-btn approve">Approve</a>
+                                        <a href="<?php echo admin_url('admin.php?page=wpwand-post-generator&action=wpwand-post-approve&id=' . $row['id']) ?>" class="wpwand-history-btn approve"><?php _e('Approve', 'wp-wand-pro'); ?></a>
                                         <a
                                             href="<?php echo admin_url('admin.php?page=wpwand-post-generator&action=wpwand-post-delete&id=' . $row['id']) ?>"
-                                            class="wpwand-history-btn delete">Remove</a>
+                                            class="wpwand-history-btn delete"><?php _e('Remove', 'wp-wand-pro'); ?></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -216,18 +214,18 @@ $data = $wpdb->get_results($query, ARRAY_A);
                     </table>
                     <div class="wpwand-history-bulk-action">
                         <select name="wpwand-bulk-action-bottom" id="bulk-action-selector-bottom">
-                            <option value="-1">Bulk actions</option>
-                            <option value="approve">Approve</option>
-                            <option value="delete">Delete</option>
+                            <option value="-1"><?php _e('Bulk actions', 'wp-wand-pro'); ?></option>
+                            <option value="approve"><?php _e('Approve', 'wp-wand-pro'); ?></option>
+                            <option value="delete"><?php _e('Delete', 'wp-wand-pro'); ?></option>
                         </select>
-                        <input type="submit" name="doaction2" id="doaction2" class="wpwand-history-btn action" value="Apply">
+                        <input type="submit" name="doaction2" id="doaction2" class="wpwand-history-btn action" value="<?php _e('Apply', 'wp-wand-pro'); ?>">
                     </div>
                 </form>
             </div>
 
 
         <?php else: ?>
-            No data found.
+            <?php _e('No data found.', 'wp-wand-pro'); ?>
         <?php endif; ?>
     </div>
 
@@ -241,8 +239,8 @@ $data = $wpdb->get_results($query, ARRAY_A);
         'current' => $current_page,
         'total' => $total_pages,
         'prev_next' => true,
-        'prev_text' => __('&laquo;', 'text-domain'),
-        'next_text' => __('&raquo;', 'text-domain'),
+        'prev_text' => __('&laquo;', 'wp-wand-pro'),
+        'next_text' => __('&raquo;', 'wp-wand-pro'),
     );
 
     // if(1 > $total_pages):

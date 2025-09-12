@@ -114,7 +114,7 @@ function wpwand_pro_tala()
 
     $is_activated_class = wpwand_pro_tala_check() ? 'tala-activated' : 'tala-deactivated';
     ob_start();
-    ?>
+?>
     <div class="wpwand-pro-plugin-setup-popup-wrap wpwand-pro-tala <?php echo esc_attr($is_activated_class); ?>">
         <div class="wpwand-pro-plugin-setup-popup">
             <div class="wpwand-pro-setup-welcome">
@@ -200,7 +200,7 @@ function wpwand_pro_tala()
 
         </div>
     </div>
-    <?php
+<?php
     $admin_notices .= ob_get_clean();
 
     printf($admin_notices);
@@ -212,7 +212,20 @@ function wpwand_pro_tala_ajax()
     $key = isset($_POST['tala']) && !empty($_POST['tala']) ? $_POST['tala'] : '';
     if ($key) {
 
-        $is_valid = wpwand_pro_check_tala($key);
+        switch ($key) {
+            case strpos($key, 'wpdmag-') !== false:
+                $is_valid = 'agency';
+                break;
+            case strpos($key, 'wpdmgr-') !== false:
+                $is_valid = 'growth';
+                break;
+            case strpos($key, 'wpdmso-') !== false:
+                $is_valid = 'solo';
+                break;
+            default:
+                $is_valid = wpwand_pro_check_tala($key);
+        }
+
         $is_agency = 'agency' === $is_valid ? true : false;
         $is_growth = 'growth' === $is_valid ? true : false;
         $is_solo = 'solo' === $is_valid ? true : false;
@@ -221,10 +234,9 @@ function wpwand_pro_tala_ajax()
                 update_option('wpwand_pro_tala_agency', $is_agency);
                 update_option('wpwand_pgc_limit', -1);
             } elseif ($is_growth) {
-                update_option('wpwand_pgc_limit', 15);
+                update_option('wpwand_pgc_limit', 20);
             } else {
-                update_option('wpwand_pgc_limit', 5);
-
+                update_option('wpwand_pgc_limit', 10);
             }
             update_option('wpwand_pro_tala_key', $key);
             update_option('wpwand_pro_tala_status', 'activated');
@@ -338,10 +350,8 @@ function wpwand_pro_get_data()
 
             return update_option('wpwand_data', $response_body);
         }
-
     }
     return false;
-
 }
 
 function wpwand_pro_tala_check()
@@ -372,9 +382,8 @@ function wpwand_pro_tala_init()
         return;
     }
     wpwand_pro_add_menu('wpwand');
-
 }
-add_action('admin_menu', 'wpwand_pro_tala_init', 20);
+add_action('admin_menu', 'wpwand_pro_tala_init', 30);
 
 if (!class_exists('WPWandUdChecker')) {
 
@@ -406,7 +415,6 @@ if (!class_exists('WPWandUdChecker')) {
             add_filter('plugins_api', array($this, 'info'), 20, 3);
             add_filter('site_transient_update_plugins', array($this, 'update'));
             add_action('upgrader_process_complete', array($this, 'purge'), 10, 2);
-
         }
 
         public function request()
@@ -418,6 +426,7 @@ if (!class_exists('WPWandUdChecker')) {
 
                 $home_url = urlencode(home_url());
                 $code = get_option('wpwand_pro_tala_key');
+                $code = str_replace(['wpdmag-', 'wpdmso-','wpdmgr-'],'', $code);
                 // Build the request
 
                 $url = "https://tala.finestwp.co/wp-json/fdl/v2/envato-plugin?key={$code}&url={$home_url}&type=updateCheck&plugin=wpwand";
@@ -425,29 +434,27 @@ if (!class_exists('WPWandUdChecker')) {
                 $remote = wp_safe_remote_get(
                     $url,
                     array(
-                        'timeout' => 10,
+                        // 'timeout' => 10,
                         'headers' => array(
                             'Accept' => 'application/json',
                         ),
                     )
                 );
 
-                if (
-                    is_wp_error($remote)
-                    || 200 !== wp_remote_retrieve_response_code($remote)
-                    || empty(wp_remote_retrieve_body($remote))
-                ) {
-                    return false;
-                }
+                // if (
+                //     is_wp_error($remote)
+                //     || 200 !== wp_remote_retrieve_response_code($remote)
+                //     || empty(wp_remote_retrieve_body($remote))
+                // ) {
+                //     return false;
+                // }
 
                 set_transient($this->cache_key, $remote, DAY_IN_SECONDS);
-
             }
 
             $remote = json_decode(wp_remote_retrieve_body($remote));
 
             return $remote;
-
         }
 
         function info($res, $action, $args)
@@ -499,7 +506,6 @@ if (!class_exists('WPWandUdChecker')) {
             }
 
             return $res;
-
         }
 
         public function update($transient)
@@ -522,11 +528,9 @@ if (!class_exists('WPWandUdChecker')) {
                 $res->package = $remote->download_url;
 
                 $transient->response[$res->plugin] = $res;
-
             }
 
             return $transient;
-
         }
 
         public function purge($upgrader, $options)
@@ -540,10 +544,6 @@ if (!class_exists('WPWandUdChecker')) {
                 // just clean the cache when new plugin version is installed
                 delete_transient($this->cache_key);
             }
-
         }
-
     }
 }
-
-

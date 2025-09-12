@@ -39,8 +39,8 @@ function wpwand_pro_block_editor()
     $wpwand_editor_button_menus = wpwand_pro_editor_prompts();
     $language = wpwand_get_option('wpwand_language', 'English');
     $wpwand_editor_button_menus[] = 'English' != $language ? [
-        'name' => 'Translate to ' . wpwand_get_option('wpwand_language', 'en'),
-        'prompt' => 'Translate to ' . wpwand_get_option('wpwand_language', 'en') . ' this text: [text]',
+        'name' => __('Translate to ' . wpwand_get_option('wpwand_language', 'en'), 'wp-wand-pro'),
+        'prompt' => __('Translate to ' . wpwand_get_option('wpwand_language', 'en') . ' this text: [text]', 'wp-wand-pro'),
         'is_pro' => false,
     ] : [];
     if (is_admin() && current_user_can('manage_options')) {
@@ -87,14 +87,13 @@ function wpwand_pro_add_advanced_tab_content()
             <h4>
                 <?php esc_html_e('Business Details Features', 'wp-wand-pro'); ?>
             </h4>
-            <p class="wpwand-field-desc">Improve your content quality 5x with these premium options.
-                Generate targeted, high quality unique content fast.</p>
+            <p class="wpwand-field-desc"><?php _e('Improve your content quality 5x with these premium options. Generate targeted, high quality unique content fast.', 'wp-wand-pro'); ?></p>
         </div>
         <table class="form-table">
             <!--         <tr>
                 <th scope="row">
                     <label for="wpwand_ai_character">
-                        <?php esc_html_e('A.I Character', 'wp-wand-pro'); ?>
+                        <?php //esc_html_e('A.I Character', 'wp-wand-pro'); ?>
 
                     </label>
                     <span class="wpwand-field-desc">Tell your A.I what character it contains while writing
@@ -102,7 +101,7 @@ function wpwand_pro_add_advanced_tab_content()
                 </th>
                 <td>
                     <textarea id="wpwand_ai_character" name="wpwand_ai_character" rows="5" maxlength="600" cols="30"
-                        placeholder="Example: You are an expert in SEO copywriting and specializing in Amazon product review article writing."><?php echo esc_attr(wpwand_get_option('wpwand_ai_character')); ?> </textarea>
+                        placeholder="Example: You are an expert in SEO copywriting and specializing in Amazon product review article writing."><?php //echo esc_attr(wpwand_get_option('wpwand_ai_character')); ?> </textarea>
                     <span class="wpwand-chars-count"></span>
                 </td>
             </tr> -->
@@ -113,12 +112,11 @@ function wpwand_pro_add_advanced_tab_content()
                         <!-- <span class="wpwand-pro-tag">PRO</span> -->
 
                     </label>
-                    <span class="wpwand-field-desc">Write about your business in detail so that AI can
-                        understand and create better content based your business. </span>
+                    <span class="wpwand-field-desc"><?php _e('Write about your business in detail so that AI can understand and create better content based your business.', 'wp-wand-pro'); ?></span>
                 </th>
                 <td>
                     <textarea id="wpwand_busines_details" name="wpwand_busines_details" maxlength="600" rows="5" cols="30"
-                        placeholder="Example: We write and share detail reviews of hiking items on our blog. We get most visitors through search engines. Our targeted visitors trust our articles to purchase hiking related products from Amazon."><?php echo esc_attr(wpwand_get_option('wpwand_busines_details')); ?></textarea>
+                        placeholder="<?php _e('Example: We write and share detail reviews of hiking items on our blog. We get most visitors through search engines. Our targeted visitors trust our articles to purchase hiking related products from Amazon.', 'wp-wand-pro'); ?>"><?php echo esc_attr(wpwand_get_option('wpwand_busines_details')); ?></textarea>
                     <span class="wpwand-chars-count"></span>
                 </td>
             </tr>
@@ -129,14 +127,12 @@ function wpwand_pro_add_advanced_tab_content()
                         <!-- <span class="wpwand-pro-tag">PRO</span> -->
 
                     </label>
-                    <span class="wpwand-field-desc">Write about your target customers in details. Give as
-                        much information as possible like who are your targeted customers, where are they
-                        from, what are there demographic etc.</span>
+                    <span class="wpwand-field-desc"><?php _e('Write about your target customers in details. Give as much information as possible like who are your targeted customers, where are they from, what are there demographic etc.', 'wp-wand-pro'); ?></span>
                 </th>
                 <td>
                     <textarea id="wpwand_targated_customer" name="wpwand_targated_customer" maxlength="600" rows="5"
                         cols="30"
-                        placeholder="Example: Our targeted customers are from USA. They are young and energetic. They are interested in tours and mostly in hiking."><?php echo esc_attr(wpwand_get_option('wpwand_targated_customer')); ?></textarea>
+                        placeholder="<?php _e('Example: Our targeted customers are from USA. They are young and energetic. They are interested in tours and mostly in hiking.', 'wp-wand-pro'); ?>"><?php echo esc_attr(wpwand_get_option('wpwand_targated_customer')); ?></textarea>
                     <span class="wpwand-chars-count"></span>
                 </td>
             </tr>
@@ -204,13 +200,12 @@ function wpwand_pro_geneeral_locked_content()
         <th scope="row">
             <label>
                 <?php esc_html_e('Sync Plugin Data', 'wp-wand-pro'); ?>
-                <span class="wpwand-field-desc">We often update our data for higher quality results.
-                    By clicking sync button you can get updated data instantly.</span>
+                <span class="wpwand-field-desc"><?php _e('We often update our data for higher quality results. By clicking sync button you can get updated data instantly.', 'wp-wand-pro'); ?></span>
             </label>
         </th>
         <td>
             <div class="wpwand-slider-input-wrap">
-                <a href="" class="wpwand-sync-prompt-data">Sync</a>
+                <a href="" class="wpwand-sync-prompt-data"><?php _e('Sync', 'wp-wand-pro'); ?></a>
             </div>
         </td>
     </tr>
@@ -226,15 +221,15 @@ function wpwand_pro_dall_e_image_field()
     ?>
     <div class="wpwand-form-group wpwand-col-2">
         <div class="wpwand-form-field">
-            <label for="wpwand-image-resulation">Select Resulation</label>
+            <label for="wpwand-image-resulation"><?php _e('Select Resulation', 'wp-wand-pro'); ?></label>
             <select name="wpwand-image-resulation" id="wpwand-image-resulation">
-                <option value="256x256">256x256</option>
-                <option value="512x512">512x512</option>
-                <option value="1024x1024">1024x1024</option>
+                <option value="256x256"><?php _e('256x256', 'wp-wand-pro'); ?></option>
+                <option value="512x512"><?php _e('512x512', 'wp-wand-pro'); ?></option>
+                <option value="1024x1024"><?php _e('1024x1024', 'wp-wand-pro'); ?></option>
             </select>
         </div>
         <div class="wpwand-form-field">
-            <label for="wpwand-result-number">Number of Results</label>
+            <label for="wpwand-result-number"><?php _e('Number of Results', 'wp-wand-pro'); ?></label>
             <input type="number" id="wpwand-result-number" min="1" max="3" name="wpwand-result-number" value="1">
         </div>
     </div>

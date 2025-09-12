@@ -29,7 +29,20 @@ class Post_Generator
     {
         // parent::__construct();
 
-        add_action('admin_menu', [$this, 'register_menu']);
+
+        add_action('init', array($this, 'wpwand_post_generator_init'), 20);
+        add_action('wpwand_bulk_post_schedule', [$this, 'wpwand_bulk_post_schedule'], 10, 1);
+
+        // add_action('init', [$this, 'restart_action_queue'], 999);
+    }
+
+    function wpwand_post_generator_init()
+    {
+
+        if (function_exists('wpwand_pro_tala_check') &&wpwand_pro_tala_check()) {
+            $this->restart_action_queue();
+            add_action('admin_menu', [$this, 'register_menu'], 11);
+        }
         add_action('wp_ajax_wpwand_post_generator', [$this, 'generate_title']);
         add_action('wp_ajax_nopriv_wpwand_post_generator', [$this, 'generate_title']);
         add_action('wp_ajax_wpwand_post_content_generator', [$this, 'generate_content']);
@@ -37,32 +50,31 @@ class Post_Generator
 
         add_action('wp_ajax_wpwand_post_generation_progress', [$this, 'generation_progress']);
         add_action('wp_ajax_nopriv_wpwand_post_generation_progress', [$this, 'generation_progress']);
-
-        add_action('wpwand_bulk_post_schedule', [$this, 'wpwand_bulk_post_schedule'], 10, 1);
-
-        add_action('init', [$this, 'restart_action_queue'], 999);
     }
-
     /**
      * Function to perform the custom task.
      */
-    function wpwand_bulk_post_schedule($args)
+    function wpwand_bulk_post_schedule($datas)
     {
-        error_log(print_r($args, true)); // Log the contents of $args
+        error_log(print_r($datas, true)); // Log the contents of $datas
 
         // Perform your custom task here
         // You can use $title, $id, and $settings as needed
-        $title = isset($args['title']) ? $args['title'] : '';
-        $id = (int) isset($args['post_id']) ? $args['post_id'] : 0;
-        $settings = isset($args['settings']) ? $args['settings'] : [];
+        $title = isset($datas['title']) ? $datas['title'] : '';
+        $id = (int) isset($datas['post_id']) ? $datas['post_id'] : 0;
+        $settings = isset($datas['settings']) ? $datas['settings'] : [];
 
 
         update_option('wpwand_as_rst_count', 'workings');
 
 
         // For example, you can call your process_post_generation function here
-        $this->process_post_generation($title, $id, $settings);
+        $result = $this->process_post_generation($title, $id, $settings);
 
+        if (!$result) {
+            // throw wp exception error
+            throw new Exception(__('Post genration failed. Datas:' . json_encode($datas), 'wp-wand-pro'));
+        }
         update_option('wpwand_as_rst_count', 'worked');
         delete_option('wpwand_as_rst_count_' . $id);
 
@@ -106,15 +118,15 @@ class Post_Generator
     function generate_title()
     {
         if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wpwand_global_nonce')) {
-            wp_send_json_error('Nonce verification failed.', 403);
+            wp_send_json_error(__('Nonce verification failed.', 'wp-wand-pro'), 403);
         }
 
         if (empty($_POST['topic'])) {
-            wp_send_json_error('error');
+            wp_send_json_error(__('error', 'wp-wand-pro'));
         }
 
         $topic = sanitize_text_field($_POST['topic'] ?? '');
-        $count = sanitize_text_field($_POST['count'] ?? '');
+        $count = sanitize_text_field($_POST['count'] ?? 0);
 
         $language = wpwand_get_option('wpwand_language', 'English');
         $rawResponse = isset($_POST['rawResponse']) && true == $_POST['rawResponse'] ? true : false;
@@ -123,7 +135,7 @@ class Post_Generator
         $generate_ai_content = function_exists('wpwand_generate_ai_content') ? 'wpwand_generate_ai_content' : 'wpwand_openAi';
 
         $content = $generate_ai_content(
-            "I will give a topic and you will write one high converting blog title. This title should have a hook and high potential to go viral on social media. My topic is" . $topic . ". You must write in $language.",
+            "I will give a topic and you will write only one high converting blog title. This title should have a hook and high potential to go viral on social media. My topic is" . $topic . ". You must write in $language.",
             (int) $count
         );
 
@@ -208,10 +220,10 @@ class Post_Generator
                 $prev_time + 60;
                 $scheduled_time = strtotime("+ $prev_time seconds");
 
-                $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule', [$args], 'wpwand_bulk_sheduler');
+                $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule', ['datas' => $args], 'wpwand_bulk_sheduler');
 
                 while (!$action_id) {
-                    $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule', [$args], 'wpwand_bulk_sheduler');
+                    $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule', ['datas' => $args], 'wpwand_bulk_sheduler');
                 }
 
                 $this->update_data([
@@ -233,7 +245,7 @@ class Post_Generator
         if ($title) {
 
             $args = [
-                'model' => 'gpt-3.5-turbo-16k',
+                // 'model' => 'gpt-3.5-turbo-16k',
                 'max_tokens' => 15000,
             ];
             $tone = isset($settings['tone']) ? $settings['tone'] : '';
@@ -243,8 +255,8 @@ class Post_Generator
             $language = wpwand_get_option('wpwand_language', 'English');
             $content = wpwand_generate_ai_content(
                 "Using Markdown formatting, write a 100% unique, creative and human-like SEO-friendly blog post using headings and sub-headings. You must write a 4000 word blog post or more. " . $keyword . ". Your writing tone must be $tone. Blog title is:" . $title . ". Be as in depth as possible and include as much detail with relavant information and cover the full topic. Always include lists and tables wherever you can. You must write at least 2-3 paragraphs with 800-1000 words content for each outline title. $toc_include. Try to use contractions, idioms, transitional phrases, interjections, dangling modifiers, and colloquialisms, and avoiding repetitive phrases and unnatural sentence structures. Also, add the blog title inside the intro paragraph as a keyword and use the seed keyword as the first H2. Always use a combination of paragraphs, lists, and tables for a better reader experience. $faq_include. Write an engaging conclusion. This blog post must be plagiarism free. The final result must pass ChatGPT detection and AI content detection. You must write in $language.",
-                1,
-                $args
+                1
+                // ,$args
             );
             // $content = wpwand_generate_ai_content(
             //     "Using Markdown formatting, write a 100% unique, creative and human-like SEO-friendly blog paragraph .You must write a 100 word blog post or less. " . $keyword . ". Your writing tone must be $tone. Paragraph title is:" . $title . ". You must write in $language.",
@@ -270,7 +282,9 @@ class Post_Generator
                             'post_id' => '',
                             'status' => 'failed',
                         ];
-                        return $this->update_data($args, $id);
+                        $this->update_data($args, $id);
+                        //
+                        throw new Exception(__('post generation failed. ai response is: ', 'wp-wand-pro') . json_encode($reply));
                     }
 
                     $args = [
@@ -284,6 +298,7 @@ class Post_Generator
                     return $this->update_data($args, $id);
                 }
             } elseif (isset($content->error)) {
+                throw new Exception(__('post generation failed. ai response is: ', 'wp-wand-pro') . json_encode($content));
                 return false;
             }
             update_option('wpwand_schedule_working', $title);
@@ -296,17 +311,20 @@ class Post_Generator
     {
 
         if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wpwand_global_nonce')) {
-            wp_send_json_error('Nonce verification failed.', 403);
+            wp_send_json_error(__('Nonce verification failed.', 'wp-wand-pro'), 403);
         }
 
         if (empty($_POST['id'])) {
-            wp_send_json_error('error');
+            wp_send_json_error(__('error', 'wp-wand-pro'));
         }
 
         global $wpdb;
         $table_name = $wpdb->prefix . 'wpwand_generated_post';
         $id = (int) $_POST['id'];
         $row = $wpdb->get_row("SELECT * FROM $table_name WHERE id = $id", ARRAY_A);
+        if (!isset($row['action_id']) || isset($row['action_id']) && !$row['action_id']) {
+            wp_send_json_error('no action id found', 403);
+        }
         $actions_data = wpwand_as_data((int) $row['action_id']);
         $status = isset($actions_data['status']) ? $actions_data['status'] : 'failed';
 
@@ -474,16 +492,16 @@ class Post_Generator
                 if (((isset($actions_data['status']) && 'failed' == $actions_data['status']) || $row['status'] == 'failed') && (4 >= $start_count || $force_restart)) {
                     update_option('wpwand_restart_needed', false);
 
-                    $args = json_decode($actions_data['extended_args'], true);
+                    $args = isset($actions_data['extended_args']) && $actions_data['extended_args'] ? json_decode($actions_data['extended_args'], true) : [];
 
                     if (is_array($args)) {
                         $prev_time = $prev_time + 60;
                         $scheduled_time = strtotime("+ $prev_time seconds");
 
-                        $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule', $args, 'wpwand_bulk_sheduler');
+                        $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule',  $args, 'wpwand_bulk_sheduler');
 
                         while (!$action_id) {
-                            $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule', $args, 'wpwand_bulk_sheduler');
+                            $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule',  $args, 'wpwand_bulk_sheduler');
                         }
 
                         $this->update_data([
@@ -654,11 +672,11 @@ class Post_Generator
                         <input type="text" name="topic" placeholder="Topic" />
                         <input type="number" name="post_count" placeholder="Post to generate" />
                         <?php wp_nonce_field('post_generate_nonce_action', 'post_generate_nonce'); ?>
-                        <button type="submit">Submit</button>
+                        <button type="submit"><?php _e('Submit', 'wp-wand-pro'); ?></button>
                     </form>
 
                     <form action="" method="post" id="wpwand-post-content-generate-form">
-                        <button type="submit">Submit</button>
+                        <button type="submit"><?php _e('Submit', 'wp-wand-pro'); ?></button>
                     </form>
                     <div class="wpwand-generated-content">
                         <ul>
@@ -704,17 +722,16 @@ class Post_Generator
                     <?php $this->limit_text(); ?>
 
                     <div class="wpwand-history-metas">
-                        <div class="wpwand-history-meta"><strong>Creation Date:</strong> <span>
+                        <div class="wpwand-history-meta"><strong><?php _e('Creation Date:', 'wp-wand-pro'); ?></strong> <span>
                                 <?php echo gmdate("g:i a - F j, Y", strtotime($row['created_at'])) ?>
                             </span>
                         </div>
 
                         <a class="wpwand-pgdc-approve-button"
-                            href="<?php echo admin_url('admin.php?page=wpwand-post-generator&action=wpwand-post-approve&id=' . $row['id']) ?>">Add
-                            to Post</a>
+                            href="<?php echo admin_url('admin.php?page=wpwand-post-generator&action=wpwand-post-approve&id=' . $row['id']) ?>"><?php _e('Add to Post', 'wp-wand-pro'); ?></a>
 
                         <a href="<?php echo admin_url('admin.php?page=wpwand-post-generator&action=wpwand-post-delete&id=' . $row['id']) ?>"
-                            class="wpwand-history-btn delete">Remove</a>
+                            class="wpwand-history-btn delete"><?php _e('Remove', 'wp-wand-pro'); ?></a>
                     </div>
                     <div class=" wpwand-history-content">
                         <?php echo $content ?>
@@ -726,8 +743,8 @@ class Post_Generator
 
                 <div class=" wpwand-history-content">
 
-                    <h1>View AI History</h1>
-                    <p>No data found.</p>
+                    <h1><?php _e('View AI History', 'wp-wand-pro'); ?></h1>
+                    <p><?php _e('No data found.', 'wp-wand-pro'); ?></p>
                 </div>
             </div>
 

@@ -5,7 +5,7 @@ class WPWAND_History_Page
 {
     function __construct()
     {
-        add_action('admin_menu', [$this, 'add_admin_menu']);
+        add_action('admin_menu', [$this, 'add_admin_menu'], 20);
     }
 
     function add_admin_menu()
@@ -54,9 +54,9 @@ class WPWAND_History_Page
                         <table class="wp-list-table widefat fixed striped">
                             <thead>
                                 <tr>
-                                    <th class="manage-column" width="40%">Result</th>
-                                    <th class="manage-column">Creation Date</th>
-                                    <th class="manage-column">Template Used</th>
+                                    <th class="manage-column" width="40%"><?php _e('Result', 'wp-wand-pro'); ?></th>
+                                    <th class="manage-column"><?php _e('Creation Date', 'wp-wand-pro'); ?></th>
+                                    <th class="manage-column"><?php _e('Template Used', 'wp-wand-pro'); ?></th>
                                     <th class="manage-column"></th>
                                 </tr>
                             </thead>
@@ -90,7 +90,7 @@ class WPWAND_History_Page
                                                 href="<?php echo admin_url('admin.php?page=wpwand-history&view=' . $row['id']) ?>"
                                                 class="wpwand-history-btn "><?php echo 'View' ?></a><a
                                                 href="<?php echo admin_url('admin.php?page=wpwand-history&action=wpwand-history-delete&id=' . $row['id']) ?>"
-                                                class="wpwand-history-btn delete">Remove</a></td>
+                                                class="wpwand-history-btn delete"><?php _e('Remove', 'wp-wand-pro'); ?></a></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -105,8 +105,8 @@ class WPWAND_History_Page
                             'current' => $current_page,
                             'total' => $total_pages,
                             'prev_next' => true,
-                            'prev_text' => __('&laquo;', 'text-domain'),
-                            'next_text' => __('&raquo;', 'text-domain'),
+                            'prev_text' => __('&laquo;', 'wp-wand-pro'),
+                            'next_text' => __('&raquo;', 'wp-wand-pro'),
                         );
 
                         ?>
@@ -117,7 +117,7 @@ class WPWAND_History_Page
                 <?php endif; ?>
             </div>
         <?php else: ?>
-            No data found.
+            <?php _e('No data found.', 'wp-wand-pro'); ?>
         <?php endif;
     }
 
@@ -152,23 +152,23 @@ class WPWAND_History_Page
             // Render the view page
             ?>
             <div class="wpwand-history-details">
-                <h1>Result Preview</h1>
+                <h1><?php _e('Result Preview', 'wp-wand-pro'); ?></h1>
                 <div class="wpwand-history-metas">
-                    <div class="wpwand-history-meta"><strong>Creation Date:</strong> <span>
+                    <div class="wpwand-history-meta"><strong><?php _e('Creation Date:', 'wp-wand-pro'); ?></strong> <span>
                             <?php echo gmdate("g:i a - F j, Y", strtotime($row['created_at'])) ?>
                         </span></div>
-                    <div class="wpwand-history-meta"><strong>Template Used::</strong> <span>
+                    <div class="wpwand-history-meta"><strong><?php _e('Template Used:', 'wp-wand-pro'); ?></strong> <span>
                             <?php echo $template_name ?>
                         </span></div>
                     <a href="<?php echo admin_url('admin.php?page=wpwand-history&action=wpwand-history-delete&id=' . $row['id']) ?>"
-                        class="wpwand-history-btn delete">Remove</a>
+                        class="wpwand-history-btn delete"><?php _e('Remove', 'wp-wand-pro'); ?></a>
                 </div>
                 <div class="<?php echo esc_attr($markdown_class) ?> wpwand-history-content"><?php echo $text ?></div>
             </div>
         <?php else: ?>
 
-            <h1>View AI History</h1>
-            <p>No data found.</p>
+            <h1><?php _e('View AI History', 'wp-wand-pro'); ?></h1>
+            <p><?php _e('No data found.', 'wp-wand-pro'); ?></p>
 
         <?php endif;
     }

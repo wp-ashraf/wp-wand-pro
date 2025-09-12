@@ -23,7 +23,7 @@ class WooCommerce_PRO
     {
 
         if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wpwand_global_nonce')) {
-            wp_send_json_error('Nonce verification failed.', 403);
+            wp_send_json_error(__('Nonce verification failed.', 'wp-wand-pro'), 403);
         }
 
         if (!isset($_POST['prompt'])) {
@@ -135,16 +135,16 @@ class WooCommerce_PRO
 
                             <div class="wpwand-form-group">
                                 <div class="wpwand-form-field">
-                                    <label for="wpwand-short_description">Short Description</label>
+                                    <label for="wpwand-short_description"><?php _e('Short Description', 'wp-wand-pro'); ?></label>
                                     <textarea name="wpwand-short_description" id="wpwand-short_description" cols="30" rows="10"
-                                        placeholder="Write short info of this product. Add what kind of product is this, how it can help customers etc. Keep it short."></textarea>
+                                        placeholder="<?php _e('Write short info of this product. Add what kind of product is this, how it can help customers etc. Keep it short.', 'wp-wand-pro'); ?>"></textarea>
                                 </div>
                             </div>
 
 
 
                             <div class="wpwand-form-submit">
-                                <button class="wpwand-submit-button">Generate Content</button>
+                                <button class="wpwand-submit-button"><?php _e('Generate Content', 'wp-wand-pro'); ?></button>
                             </div>
                         </form>
                         <div class="wpwand-result-box wpwand-" style="display: none;">

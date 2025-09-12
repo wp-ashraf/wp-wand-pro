@@ -11,7 +11,7 @@ function wpwand_pro_request()
 {
 
     if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wpwand_global_nonce')) {
-        wp_send_json_error('Nonce verification failed.', 403);
+        wp_send_json_error(__('Nonce verification failed.', 'wp-wand-pro'), 403);
     }
 
     if (isset($_POST['wpwand_image_prompt']) && !empty($_POST['wpwand_image_prompt'])) {
