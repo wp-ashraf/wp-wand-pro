@@ -288,3 +288,92 @@ a.wpwand-btn {
     box-shadow: 0 0 0 2px rgba(55, 103, 251, 0.2);
     outline: none;
 }
+
+
+
+/* Blog Content Formatting */
+.wpwand-history-content {
+  line-height: 1.7;
+  font-size: 1rem;
+  color: #333;
+}
+
+.wpwand-history-content p {
+  margin-bottom: 1.2em;
+    font-size: 1rem;
+
+}
+
+/* Headings */
+.wpwand-history-content h2,
+.wpwand-history-content h3,
+.wpwand-history-content h4 {
+  margin-top: 2em;
+  margin-bottom: 1em;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Bullet & Numbered Lists */
+.wpwand-history-content ul,
+.wpwand-history-content ol {
+  margin: 1.2em 0 1.2em 1.5em;
+  padding-left: 1em;
+}
+
+.wpwand-history-content ul li {
+  margin-bottom: 0.6em;
+  list-style: disc;
+}
+
+.wpwand-history-content ol li {
+  margin-bottom: 0.6em;
+  list-style: decimal;
+}
+
+/* Blockquotes */
+.wpwand-history-content blockquote {
+  border-left: 4px solid #3767FB;
+  padding: 0.8em 1.2em;
+  margin: 1.5em 0;
+  font-style: italic;
+  background: #f9f9f9;
+  color: #555;
+}
+
+/* Tables */
+.wpwand-history-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 16px;
+}
+
+.wpwand-history-content table th,
+.wpwand-history-content table td {
+  border: 1px solid #ddd;
+  padding: 0.8em;
+  text-align: left;
+}
+
+.wpwand-history-content table th {
+  background: #f3f3f3;
+  font-weight: 600;
+}
+
+/* Images */
+.wpwand-history-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 1.5em 0;
+}
+
+/* Spacing between elements */
+.wpwand-history-content > *:first-child {
+  margin-top: 0;
+}
+
+.wpwand-history-content > *:last-child {
+  margin-bottom: 0;
+}

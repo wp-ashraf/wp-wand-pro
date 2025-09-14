@@ -76,8 +76,12 @@ $data = $wpdb->get_results($query, ARRAY_A);
                                     <script>
                                         ! function() {
                                             function t(t) {
-                                                this.element = t, this.animationId, this.start = null, this.init()
+                                                this.element = t;
+                                                this.animationId = null;
+                                                this.start = null;
+                                                this.init();
                                             }
+
                                             if (!window.requestAnimationFrame) {
                                                 var i = null;
                                                 window.requestAnimationFrame = function(t, n) {
@@ -85,38 +89,54 @@ $data = $wpdb->get_results($query, ARRAY_A);
                                                     i || (i = e);
                                                     var a = Math.max(0, 16 - (e - i)),
                                                         o = window.setTimeout(function() {
-                                                            t(e + a)
+                                                            t(e + a);
                                                         }, a);
-                                                    return i = e + a, o
-                                                }
+                                                    return i = e + a, o;
+                                                };
                                             }
+
                                             t.prototype.init = function() {
-                                                var t = this;
-                                                this.animationId = window.requestAnimationFrame(t.triggerAnimation.bind(t))
-                                            }, t.prototype.reset = function() {
-                                                var t = this;
-                                                window.cancelAnimationFrame(t.animationId)
-                                            }, t.prototype.triggerAnimation = function(t) {
-                                                var i = this;
-                                                this.start || (this.start = t);
-                                                var n = t - this.start;
-                                                800 & gt;
-                                                n || (this.start = this.start + 800), this.element.setAttribute("transform", "rotate(" + parseInt(Math.min(n / 100, 8)) % 8 * 45 + " 24 24)");
-                                                if (document.documentElement.contains(this.element)) window.requestAnimationFrame(i.triggerAnimation.bind(i))
+                                                this.animationId = window.requestAnimationFrame(this.triggerAnimation.bind(this));
                                             };
+
+                                            t.prototype.reset = function() {
+                                                window.cancelAnimationFrame(this.animationId);
+                                            };
+
+                                            t.prototype.triggerAnimation = function(t) {
+                                                if (!this.start) this.start = t;
+                                                var n = t - this.start;
+                                                if (n > 800) this.start = this.start + 800;
+                                                this.element.setAttribute(
+                                                    "transform",
+                                                    "rotate(" + (parseInt(Math.min(n / 100, 8)) % 8 * 45) + " 24 24)"
+                                                );
+                                                if (document.documentElement.contains(this.element)) {
+                                                    window.requestAnimationFrame(this.triggerAnimation.bind(this));
+                                                }
+                                            };
+
                                             var n = document.getElementsByClassName("nc-loop_bars-rotate-48"),
                                                 e = [];
-                                            if (n)
-                                                for (var a = 0; n.length & gt; a; a++) ! function(i) {
-                                                    e.push(new t(n[i]))
-                                                }(a);
+                                            if (n) {
+                                                for (var a = 0; a < n.length; a++) {
+                                                    (function(i) {
+                                                        e.push(new t(n[i]));
+                                                    })(a);
+                                                }
+                                            }
+
                                             document.addEventListener("visibilitychange", function() {
-                                                "hidden" == document.visibilityState ? e.forEach(function(t) {
-                                                    t.reset()
-                                                }) : e.forEach(function(t) {
-                                                    t.init()
-                                                })
-                                            })
+                                                if (document.visibilityState === "hidden") {
+                                                    e.forEach(function(t) {
+                                                        t.reset();
+                                                    });
+                                                } else {
+                                                    e.forEach(function(t) {
+                                                        t.init();
+                                                    });
+                                                }
+                                            });
                                         }();
                                     </script>
                                 </g>

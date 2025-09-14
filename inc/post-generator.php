@@ -39,7 +39,7 @@ class Post_Generator
     function wpwand_post_generator_init()
     {
 
-        if (function_exists('wpwand_pro_tala_check') &&wpwand_pro_tala_check()) {
+        if (function_exists('wpwand_pro_tala_check') && wpwand_pro_tala_check()) {
             $this->restart_action_queue();
             add_action('admin_menu', [$this, 'register_menu'], 11);
         }
@@ -220,6 +220,10 @@ class Post_Generator
                 $prev_time + 60;
                 $scheduled_time = strtotime("+ $prev_time seconds");
 
+                if (as_next_scheduled_action('wpwand_bulk_post_schedule',  ['datas' => $args], 'wpwand_bulk_sheduler')) {
+                    continue;
+                }
+
                 $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule', ['datas' => $args], 'wpwand_bulk_sheduler');
 
                 while (!$action_id) {
@@ -246,7 +250,7 @@ class Post_Generator
 
             $args = [
                 // 'model' => 'gpt-3.5-turbo-16k',
-                'max_tokens' => 15000,
+                'max_tokens' => 10000,
             ];
             $tone = isset($settings['tone']) ? $settings['tone'] : '';
             $keyword = isset($settings['keyword']) ? "You must include the these keywords inside the blog post: " . $settings['keyword'] : '';
@@ -255,8 +259,8 @@ class Post_Generator
             $language = wpwand_get_option('wpwand_language', 'English');
             $content = wpwand_generate_ai_content(
                 "Using Markdown formatting, write a 100% unique, creative and human-like SEO-friendly blog post using headings and sub-headings. You must write a 4000 word blog post or more. " . $keyword . ". Your writing tone must be $tone. Blog title is:" . $title . ". Be as in depth as possible and include as much detail with relavant information and cover the full topic. Always include lists and tables wherever you can. You must write at least 2-3 paragraphs with 800-1000 words content for each outline title. $toc_include. Try to use contractions, idioms, transitional phrases, interjections, dangling modifiers, and colloquialisms, and avoiding repetitive phrases and unnatural sentence structures. Also, add the blog title inside the intro paragraph as a keyword and use the seed keyword as the first H2. Always use a combination of paragraphs, lists, and tables for a better reader experience. $faq_include. Write an engaging conclusion. This blog post must be plagiarism free. The final result must pass ChatGPT detection and AI content detection. You must write in $language.",
-                1
-                // ,$args
+                1,
+                $args
             );
             // $content = wpwand_generate_ai_content(
             //     "Using Markdown formatting, write a 100% unique, creative and human-like SEO-friendly blog paragraph .You must write a 100 word blog post or less. " . $keyword . ". Your writing tone must be $tone. Paragraph title is:" . $title . ". You must write in $language.",
@@ -276,9 +280,10 @@ class Post_Generator
                     $Parsedown = new \Parsedown();
 
                     if (empty($reply)) {
+                        $error_message = __('AI response is empty. This might be due to a temporary issue with the AI service. Please try again later.', 'wp-wand-pro');
                         $args = [
                             'title' => $title,
-                            'content' => '',
+                            'content' => $error_message,
                             'post_id' => '',
                             'status' => 'failed',
                         ];
@@ -298,6 +303,14 @@ class Post_Generator
                     return $this->update_data($args, $id);
                 }
             } elseif (isset($content->error)) {
+                $error_message = isset($content->error->message) ? $content->error->message : __('An unknown error occurred.', 'wp-wand-pro');
+                $args = [
+                    'title' => $title,
+                    'content' => "<span style='color:red;'>Content generation failed due to:  $error_message</span>",
+                    'post_id' => '',
+                    'status' => 'failed',
+                ];
+                $this->update_data($args, $id);
                 throw new Exception(__('post generation failed. ai response is: ', 'wp-wand-pro') . json_encode($content));
                 return false;
             }
@@ -498,6 +511,11 @@ class Post_Generator
                         $prev_time = $prev_time + 60;
                         $scheduled_time = strtotime("+ $prev_time seconds");
 
+
+                        if (as_next_scheduled_action('wpwand_bulk_post_schedule',  $args, 'wpwand_bulk_sheduler')) {
+                            continue;
+                        }
+
                         $action_id = as_schedule_single_action($scheduled_time, 'wpwand_bulk_post_schedule',  $args, 'wpwand_bulk_sheduler');
 
                         while (!$action_id) {
@@ -516,6 +534,13 @@ class Post_Generator
                         } else {
                             $start_count++;
 
+                            // if (4 == $start_count) {
+                            //     $error_message = __('The task has failed multiple times and will not be retried. Please check the logs for more details.', 'wp-wand-pro');
+                            //     $this->update_data(['content' => $error_message, 'status' => 'failed'], $row['id']);
+                            //     update_option('wpwand_restart_needed', false);
+                            // } else {
+                            //     update_option('wpwand_restart_needed', true);
+                            // }
                             if (4 == $start_count) {
                                 update_option('wpwand_restart_needed', true);
                             }
