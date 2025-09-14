@@ -4,7 +4,7 @@
  * Plugin Name: WP Wand Pro
  * Plugin URI: https://wpwand.com/
  * Description: WP Wand Pro allows you to use the full potential of WP Wand with tons of extra features for quality content generation.
- * Version: 1.2.9
+ * Version: 1.3.0
  * Author: WP Wand
  * Author URI: https://wpwand.com/
  * Text Domain: wp-wand-pro
