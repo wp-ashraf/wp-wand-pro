@@ -108,7 +108,7 @@ class Post_Generator
      */
     function register_menu()
     {
-        add_submenu_page('wpwand', __('Bulk Posts', 'wp-wand-pro'), __('Bulk Posts', 'wp-wand-pro'), 'manage_options', 'wpwand-post-generator', [$this, 'post_generate_page']);
+        add_submenu_page('wpwand', __('Bulk Posts', 'wp-wand-pro'), __('Bulk Posts', 'wp-wand-pro'), 'edit_posts', 'wpwand-post-generator', [$this, 'post_generate_page']);
     }
 
     /**

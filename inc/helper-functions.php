@@ -43,7 +43,7 @@ function wpwand_pro_block_editor()
         'prompt' => __('Translate to ' . wpwand_get_option('wpwand_language', 'en') . ' this text: [text]', 'wp-wand-pro'),
         'is_pro' => false,
     ] : [];
-    if (is_admin() && current_user_can('manage_options')) {
+    if (is_admin() && current_user_can('edit_posts')) {
         wp_enqueue_script(
             'wpwand-gutenberg-custom-button',
             WPWAND_PLUGIN_URL . 'assets/js/wpwand-gutenberg.js',
