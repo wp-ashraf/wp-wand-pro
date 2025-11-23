@@ -43,6 +43,7 @@ class WPWAND_DB
             post_id BIGINT UNSIGNED DEFAULT NULL,
             action_id BIGINT UNSIGNED DEFAULT NULL,
             status VARCHAR(255) DEFAULT 'pending',
+            featured_image_id BIGINT UNSIGNED DEFAULT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
             ) $charset_collate;";
@@ -53,6 +54,11 @@ class WPWAND_DB
             $sql = "ALTER TABLE $pg_table ADD COLUMN action_id BIGINT UNSIGNED DEFAULT NULL";
 
             // Execute the SQL statement
+            $wpdb->query($sql);
+        }
+
+        if (!in_array('featured_image_id', $pg_columns)) {
+            $sql = "ALTER TABLE $pg_table ADD COLUMN featured_image_id BIGINT UNSIGNED DEFAULT NULL";
             $wpdb->query($sql);
         }
 

@@ -29,7 +29,7 @@ function wpwand_pro_admin_scripts()
 }
 
 add_action('admin_enqueue_scripts', 'wpwand_pro_admin_scripts');
-add_action('wp_enqueue_scripts', 'wpwand_pro_admin_scripts');
+// add_action('wp_enqueue_scripts', 'wpwand_pro_admin_scripts');
 
 // remove_action( 'enqueue_block_editor_assets', 'wpwand_block_editor', 9 );
 // add_action( 'enqueue_block_editor_assets', 'wpwand_pro_block_editor', 9 );

@@ -244,80 +244,122 @@ class Post_Generator
 
     function process_post_generation($title, $id, $settings = [])
     {
-
-        // $this->add_data($title);
-        if ($title) {
-
-            $args = [
-                // 'model' => 'gpt-3.5-turbo-16k',
-                'max_tokens' => 10000,
-            ];
-            $tone = isset($settings['tone']) ? $settings['tone'] : '';
-            $keyword = isset($settings['keyword']) ? "You must include the these keywords inside the blog post: " . $settings['keyword'] : '';
-            $toc_include = isset($settings['toc_include']) && $settings['toc_include'] ? 'You must add a Table of Contents at the beginning' : '';
-            $faq_include = isset($settings['faq_include']) && $settings['faq_include'] ? 'You must add a Table of Contents at the bottom' : '';
-            $language = wpwand_get_option('wpwand_language', 'English');
-            $content = wpwand_generate_ai_content(
-                "Using Markdown formatting, write a 100% unique, creative and human-like SEO-friendly blog post using headings and sub-headings. You must write a 4000 word blog post or more. " . $keyword . ". Your writing tone must be $tone. Blog title is:" . $title . ". Be as in depth as possible and include as much detail with relavant information and cover the full topic. Always include lists and tables wherever you can. You must write at least 2-3 paragraphs with 800-1000 words content for each outline title. $toc_include. Try to use contractions, idioms, transitional phrases, interjections, dangling modifiers, and colloquialisms, and avoiding repetitive phrases and unnatural sentence structures. Also, add the blog title inside the intro paragraph as a keyword and use the seed keyword as the first H2. Always use a combination of paragraphs, lists, and tables for a better reader experience. $faq_include. Write an engaging conclusion. This blog post must be plagiarism free. The final result must pass ChatGPT detection and AI content detection. You must write in $language.",
-                1,
-                $args
-            );
-            // $content = wpwand_generate_ai_content(
-            //     "Using Markdown formatting, write a 100% unique, creative and human-like SEO-friendly blog paragraph .You must write a 100 word blog post or less. " . $keyword . ". Your writing tone must be $tone. Paragraph title is:" . $title . ". You must write in $language.",
-            //     1,
-            //     $args
-            // );
-
-
-            $i = 0;
-            if (isset($content->choices)) {
-
-                foreach ($content->choices as $choice) {
-                    $i++;
-                    $reply = isset($choice->message) ? $choice->message->content : $choice->text;
-
-
-                    $Parsedown = new \Parsedown();
-
-                    if (empty($reply)) {
-                        $error_message = __('AI response is empty. This might be due to a temporary issue with the AI service. Please try again later.', 'wp-wand-pro');
-                        $args = [
-                            'title' => $title,
-                            'content' => $error_message,
-                            'post_id' => '',
-                            'status' => 'failed',
-                        ];
-                        $this->update_data($args, $id);
-                        //
-                        throw new Exception(__('post generation failed. ai response is: ', 'wp-wand-pro') . json_encode($reply));
-                    }
-
-                    $args = [
-                        'title' => $title,
-                        'content' => $Parsedown->text($reply),
-                        'post_id' => '',
-                        'status' => 'done',
-                    ];
-                    update_option('wpwand_schedule_working', $args);
-
-                    return $this->update_data($args, $id);
-                }
-            } elseif (isset($content->error)) {
-                $error_message = isset($content->error->message) ? $content->error->message : __('An unknown error occurred.', 'wp-wand-pro');
-                $args = [
-                    'title' => $title,
-                    'content' => "<span style='color:red;'>Content generation failed due to:  $error_message</span>",
-                    'post_id' => '',
-                    'status' => 'failed',
-                ];
-                $this->update_data($args, $id);
-                throw new Exception(__('post generation failed. ai response is: ', 'wp-wand-pro') . json_encode($content));
-                return false;
-            }
-            update_option('wpwand_schedule_working', $title);
+        if (!$title) {
+            update_option('wpwand_schedule_working', 'failed - no title');
+            return false;
         }
-        update_option('wpwand_schedule_working', 'failed');
-        return false;
+
+        $language = wpwand_get_option('wpwand_language', 'English');
+        $tone = isset($settings['tone']) ? $settings['tone'] : '';
+        $keyword_setting = isset($settings['keyword']) ? $settings['keyword'] : '';
+        $keyword_prompt = !empty($keyword_setting) ? "You must include these keywords: " . $keyword_setting : '';
+        $toc_include = isset($settings['toc_include']) && $settings['toc_include'];
+        $faq_include = isset($settings['faq_include']) && $settings['faq_include'];
+        $args = [
+            'max_tokens' => 8000,
+        ];
+
+        // Step 1: Generate Outline
+        $outline_prompt = "Generate a comprehensive blog post outline with 5-10 main headings for the blog title: '{$title}'. The outline should be a simple numbered list of headings. Do not write any other text, description, or intro/outro, only the list of outline headings. {$keyword_prompt}. Write in {$language}.";
+
+        $outline_content = wpwand_generate_ai_content($outline_prompt, 1, $args);
+
+        if (isset($outline_content->error) || !isset($outline_content->choices[0])) {
+            $error_message = isset($outline_content->error->message) ? $outline_content->error->message : 'Failed to generate post outline.';
+            $this->update_data(['content' => "Content generation failed: {$error_message}", 'status' => 'failed'], $id);
+            throw new Exception('Post generation failed while creating outline. AI response: ' . json_encode($outline_content));
+        }
+
+        $outline_text = $outline_content->choices[0]->message->content ?? $outline_content->choices[0]->text;
+        $outline_headings = preg_split('/\r\n|\r|\n/', $outline_text);
+        $outline_headings = array_filter(array_map('trim', $outline_headings));
+
+        if (empty($outline_headings)) {
+            $this->update_data(['content' => 'Content generation failed: Could not parse the generated outline.', 'status' => 'failed'], $id);
+            throw new Exception('Post generation failed: Could not parse the generated outline. Outline was: ' . $outline_text);
+        }
+
+        $full_content = '';
+
+        // Step 2: Add Table of Contents if requested
+        if ($toc_include) {
+            $full_content .= "<h2>Table of Contents</h2>\n<ul>\n";
+            foreach ($outline_headings as $heading) {
+                $clean_heading = preg_replace('/^\d+\.\s*/', '', $heading);
+                $anchor = sanitize_title($clean_heading);
+                $full_content .= "<li><a href=\"#{$anchor}\">{$clean_heading}</a></li>\n";
+            }
+            $full_content .= "</ul>\n\n";
+        }
+
+        // Step 3: Generate content for each heading
+        foreach ($outline_headings as $heading) {
+            $clean_heading = preg_replace('/^\d+\.\s*/', '', $heading);
+            $anchor = sanitize_title($clean_heading);
+            $full_content .= "<h2 id=\"{$anchor}\">{$clean_heading}</h2>\n\n";
+
+            $section_prompt = "
+                Using Markdown formatting, write a 100% unique, creative, and human-like SEO-friendly section for a blog post titled '{$title}'. 
+                This section is for the heading: '{$clean_heading}' **but do NOT rewrite this heading, do NOT output any Markdown heading (#, ##, ###).**
+                Start directly with the section body.
+
+                Write a detailed 400–600 word section. {$keyword_prompt}. 
+                Tone: {$tone}. Cover the topic fully with depth. 
+                Use paragraphs, lists, and tables naturally. 
+                Avoid repeating the heading, avoid unnatural repetition, avoid duplicate title lines. 
+                The output must be plagiarism-free and written in {$language}.
+                ";
+
+            $section_content_response = wpwand_generate_ai_content($section_prompt, 1, $args);
+
+            if (isset($section_content_response->error) || !isset($section_content_response->choices[0])) {
+                error_log('WP Wand: Failed to generate section for heading: ' . $heading);
+                continue;
+            }
+
+            $section_text = $section_content_response->choices[0]->message->content ?? $section_content_response->choices[0]->text;
+            $Parsedown = new \Parsedown();
+            $full_content .= $Parsedown->text($section_text) . "\n\n";
+        }
+
+        // Step 4: Add FAQ section if requested
+        if ($faq_include) {
+            $faq_prompt = "Generate a 100% unique and plagiarism-free FAQ section with 3-5 relevant questions and answers for a blog post titled '{$title}'. Use Markdown for formatting. You must write in {$language}. **but do NOT rewrite this heading, do NOT output any Markdown heading (#, ##, ###).**";
+            $faq_content_response = wpwand_generate_ai_content($faq_prompt, 1, $args);
+
+            if (isset($faq_content_response->choices[0])) {
+                $faq_text = $faq_content_response->choices[0]->message->content ?? $faq_content_response->choices[0]->text;
+                $Parsedown = new \Parsedown();
+                $full_content .= "<h2>Frequently Asked Questions</h2>\n\n" . $Parsedown->text($faq_text) . "\n\n";
+            }
+        }
+
+        // Step 5: Generate Conclusion
+        $conclusion_prompt = "Write a 100% unique, engaging, and plagiarism-free conclusion for the blog post titled '{$title}'. You must write in {$language}.";
+        $conclusion_content_response = wpwand_generate_ai_content($conclusion_prompt, 1, $args);
+
+        if (isset($conclusion_content_response->choices[0])) {
+            $conclusion_text = $conclusion_content_response->choices[0]->message->content ?? $conclusion_content_response->choices[0]->text;
+            $Parsedown = new \Parsedown();
+            $full_content .= "<h2>Conclusion</h2>\n\n" . $Parsedown->text($conclusion_text) . "\n\n";
+        }
+
+        if (empty(trim($full_content))) {
+            $error_message = __('AI response is empty or could not be generated. This might be due to a temporary issue with the AI service. Please try again later.', 'wp-wand-pro');
+            $this->update_data(['content' => $error_message, 'status' => 'failed'], $id);
+            throw new Exception('Post generation failed. Final content was empty.');
+        }
+
+        $update_args = [
+            'title' => $title,
+            'content' => $full_content,
+            'post_id' => '',
+            'status' => 'done',
+            'featured_image_id' => null,
+        ];
+        update_option('wpwand_schedule_working', $update_args);
+
+        return $this->update_data($update_args, $id);
     }
 
     public function generation_progress()
@@ -453,6 +495,11 @@ class Post_Generator
             $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
             $row = $wpdb->get_row("SELECT * FROM $table_name WHERE id = $id", ARRAY_A);
             $post_id = $this->insert_post($row['title'], $row['content']);
+
+            if ($post_id && !empty($row['featured_image_id'])) {
+                set_post_thumbnail($post_id, $row['featured_image_id']);
+            }
+
             $args = [
                 'post_id' => $post_id,
             ];
