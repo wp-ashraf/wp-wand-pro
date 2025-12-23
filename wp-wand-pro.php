@@ -4,7 +4,7 @@
  * Plugin Name: WP Wand Pro
  * Plugin URI: https://wpwand.com/
  * Description: WP Wand Pro allows you to use the full potential of WP Wand with tons of extra features for quality content generation.
- * Version: 1.3.03
+ * Version: 1.3.04
  * Author: WP Wand
  * Author URI: https://wpwand.com/
  * Text Domain: wp-wand-pro
@@ -25,7 +25,7 @@ define('WPWAND_PRO_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 
 require __DIR__ . '/vendor/action-scheduler/action-scheduler.php';
-require __DIR__ . '/vendor/action-scheduler/action-scheduler-high-volume.php';
+// require __DIR__ . '/vendor/action-scheduler/action-scheduler-high-volume.php';
 
 add_action('plugins_loaded', 'wpwand_pro_load_plugin', 20);
 
