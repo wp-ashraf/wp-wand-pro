@@ -255,12 +255,22 @@ class Post_Generator
         $keyword_prompt = !empty($keyword_setting) ? "You must include these keywords: " . $keyword_setting : '';
         $toc_include = isset($settings['toc_include']) && $settings['toc_include'];
         $faq_include = isset($settings['faq_include']) && $settings['faq_include'];
+
+        // Get target word count (default 3000 to match old behavior)
+        $target_word_count = wpwand_get_option('wpwand_target_word_count', 3000);
+
+        // Get user's custom prompt template (with default fallback)
+        $user_prompt_template = wpwand_get_option(
+            'wpwand_content_prompt_template',
+            "Using Markdown formatting, write a 100% unique, creative and human-like SEO-friendly blog post section. {KEYWORD_PLACEHOLDER}. Your writing tone must be {TONE_PLACEHOLDER}. Write {WORDS_PER_SECTION} words for the section: {SECTION_PLACEHOLDER}. Be as in depth as possible and include as much detail with relevant information. Try to use contractions, idioms, transitional phrases, interjections, dangling modifiers, and colloquialisms, and avoiding repetitive phrases and unnatural sentence structures. Include lists and tables only when genuinely helpful. Write engaging, plagiarism-free content that passes AI detection. You must write in {LANGUAGE_PLACEHOLDER}."
+        );
+
         $args = [
             'max_tokens' => 8000,
         ];
 
         // Step 1: Generate Outline
-        $outline_prompt = "Generate a comprehensive blog post outline with 5-10 main headings for the blog title: '{$title}'. The outline should be a simple numbered list of headings. Do not write any other text, description, or intro/outro, only the list of outline headings. {$keyword_prompt}. Write in {$language}.";
+        $outline_prompt = "Generate a comprehensive blog post outline with 5-8 main headings for the blog title: '{$title}'. The outline should be a simple numbered list of headings only. Do not write any other text, description, or intro/outro—only the list of outline headings. {$keyword_prompt}. Write in {$language}.";
 
         $outline_content = wpwand_generate_ai_content($outline_prompt, 1, $args);
 
@@ -292,25 +302,66 @@ class Post_Generator
             $full_content .= "</ul>\n\n";
         }
 
-        // Step 3: Generate content for each heading
-        foreach ($outline_headings as $heading) {
+        $total_sections = count($outline_headings);
+
+        // Calculate words per section dynamically
+        // Reserve words: FAQ (~400) + Conclusion (~250) = 650 words
+        $reserved_words = 0;
+        if ($faq_include) $reserved_words += 400;
+        $reserved_words += 250; // conclusion
+
+        $available_words = $target_word_count - $reserved_words;
+        $words_per_section = max(200, floor($available_words / $total_sections)); // minimum 200 words
+
+        // Step 3: Generate content for each section using the customizable prompt
+        foreach ($outline_headings as $index => $heading) {
             $clean_heading = preg_replace('/^\d+\.\s*/', '', $heading);
             $anchor = sanitize_title($clean_heading);
             $full_content .= "<h2 id=\"{$anchor}\">{$clean_heading}</h2>\n\n";
 
-            $section_prompt = "
-                Using Markdown formatting, write a 100% unique, creative, and human-like SEO-friendly section for a blog post titled '{$title}'. 
-                This section is for the heading: '{$clean_heading}' **but do NOT rewrite this heading, do NOT output any Markdown heading (#, ##, ###).**
-                Start directly with the section body.
+            // Prepare context from already generated content
+            $context_instruction = '';
+            if ($index > 0) {
+                $plain_previous = strip_tags($full_content);
+                $content_length = strlen($plain_previous);
 
-                Write a detailed 400–600 word section. {$keyword_prompt}. 
-                Tone: {$tone}. Cover the topic fully with depth. 
-                Use paragraphs, lists, and tables naturally. 
-                Avoid repeating the heading, avoid unnatural repetition, avoid duplicate title lines. 
-                The output must be plagiarism-free and written in {$language}.
-                ";
+                if ($content_length > 2000) {
+                    $context_snippet = substr($plain_previous, -2000);
+                } else {
+                    $context_snippet = $plain_previous;
+                }
 
-            $section_content_response = wpwand_generate_ai_content($section_prompt, 1, $args);
+                $context_instruction = "
+
+PREVIOUS CONTENT ALREADY WRITTEN:
+---
+{$context_snippet}
+---
+
+CRITICAL: Do NOT repeat information, examples, or points already covered above. Build upon what's been discussed and maintain natural flow. Vary your formatting style from previous sections.
+";
+            }
+
+            // Replace placeholders in user's template
+            $section_prompt = str_replace(
+                ['{KEYWORD_PLACEHOLDER}', '{TONE_PLACEHOLDER}', '{SECTION_PLACEHOLDER}', '{LANGUAGE_PLACEHOLDER}', '{TITLE_PLACEHOLDER}', '{WORDS_PER_SECTION}'],
+                [$keyword_prompt, $tone, $clean_heading, $language, $title, $words_per_section . ' words'],
+                $user_prompt_template
+            );
+
+            // Add context and position info
+            $position_info = '';
+            if ($index === 0) {
+                $position_info = "This is the FIRST main section of the blog post titled '{$title}'. Set the foundation and engage readers.";
+            } elseif ($index === $total_sections - 1) {
+                $position_info = "This is the FINAL section before the conclusion of the blog post titled '{$title}'. Bring key points together.";
+            } else {
+                $position_info = "This is section " . ($index + 1) . " of {$total_sections} for the blog post titled '{$title}'.";
+            }
+
+            $final_prompt = $position_info . $context_instruction . "\n\n" . $section_prompt . "\n\n**IMPORTANT: Do NOT rewrite the section heading. Do NOT output Markdown headings (#, ##, ###). Start directly with the section body content.**";
+
+            $section_content_response = wpwand_generate_ai_content($final_prompt, 1, $args);
 
             if (isset($section_content_response->error) || !isset($section_content_response->choices[0])) {
                 error_log('WP Wand: Failed to generate section for heading: ' . $heading);
@@ -324,7 +375,17 @@ class Post_Generator
 
         // Step 4: Add FAQ section if requested
         if ($faq_include) {
-            $faq_prompt = "Generate a 100% unique and plagiarism-free FAQ section with 3-5 relevant questions and answers for a blog post titled '{$title}'. Use Markdown for formatting. You must write in {$language}. **but do NOT rewrite this heading, do NOT output any Markdown heading (#, ##, ###).**";
+            $plain_full_content = strip_tags($full_content);
+            $content_for_faq = strlen($plain_full_content) > 3000 ? substr($plain_full_content, -3000) : $plain_full_content;
+
+            $faq_prompt = "You've written a blog post titled '{$title}'. Here's the content so far:
+
+---
+{$content_for_faq}
+---
+
+Generate a FAQ section with 3-4 relevant questions and answers (about 400 words total). **Do NOT write a FAQ heading.** Use Markdown: bold for questions, regular text for answers. Questions should complement (not repeat) existing content. Write in {$tone} tone and {$language} language. Keep answers concise: 80-100 words each.";
+
             $faq_content_response = wpwand_generate_ai_content($faq_prompt, 1, $args);
 
             if (isset($faq_content_response->choices[0])) {
@@ -335,7 +396,17 @@ class Post_Generator
         }
 
         // Step 5: Generate Conclusion
-        $conclusion_prompt = "Write a 100% unique, engaging, and plagiarism-free conclusion for the blog post titled '{$title}'. You must write in {$language}.";
+        $plain_full_content = strip_tags($full_content);
+        $content_for_conclusion = strlen($plain_full_content) > 3000 ? substr($plain_full_content, -3000) : $plain_full_content;
+
+        $conclusion_prompt = "You've written a blog post titled '{$title}'. Here's the content:
+
+---
+{$content_for_conclusion}
+---
+
+Write an engaging 200-250 word conclusion. **Do NOT write 'Conclusion' as a heading.** Summarize key insights without repetition, end with a memorable takeaway or call-to-action. Tone: {$tone}. Language: {$language}.";
+
         $conclusion_content_response = wpwand_generate_ai_content($conclusion_prompt, 1, $args);
 
         if (isset($conclusion_content_response->choices[0])) {
@@ -357,11 +428,10 @@ class Post_Generator
             'status' => 'done',
             'featured_image_id' => null,
         ];
-        update_option('wpwand_schedule_working', $update_args);
 
+        update_option('wpwand_schedule_working', $update_args);
         return $this->update_data($update_args, $id);
     }
-
     public function generation_progress()
     {
 
