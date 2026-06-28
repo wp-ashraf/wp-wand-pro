@@ -3,6 +3,7 @@
 namespace WPWand\Modules;
 
 use WPWand\Admin\LicensePage;
+use WPWand\License\UpdateChecker;
 use WPWand\Rest\Controllers\LicenseController;
 
 /** License activation screen + API (Pro). */
@@ -27,5 +28,8 @@ final class LicenseModule extends AbstractModule
     {
         $this->admin(static fn () => (new LicensePage())->register());
         $this->rest([LicenseController::class]);
+
+        // Self-hosted plugin updates (replaces the legacy WPWandUdChecker in inc/tala.php).
+        (new UpdateChecker())->register();
     }
 }

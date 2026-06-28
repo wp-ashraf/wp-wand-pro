@@ -97,10 +97,13 @@ function wpwand_pro_load_plugin()
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/post-generator.php';
     }
 
-    if ($updatechecker === null) {
-
-        $updatechecker = new WPWandUdChecker();
-    }
+    // Plugin updates are now handled by the new-architecture WPWand\License\UpdateChecker
+    // (wired from LicenseModule). The legacy WPWandUdChecker is left defined in inc/tala.php for
+    // reference but is intentionally NOT instantiated here — running both would double-register the
+    // site_transient_update_plugins / plugins_api filters and fight over the wpwand_pro_update cache.
+    // if ($updatechecker === null) {
+    //     $updatechecker = new WPWandUdChecker();
+    // }
 }
 
 

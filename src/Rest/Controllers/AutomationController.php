@@ -35,6 +35,11 @@ final class AutomationController extends AbstractController
             ['methods' => 'POST', 'callback' => [$this, 'run'], 'permission_callback' => [$this, 'can_pro']],
         ]);
 
+        // Pause / resume a schedule without opening the edit form.
+        register_rest_route($this->rest_namespace, '/' . $this->rest_base . '/(?P<id>[A-Za-z0-9\-]+)/toggle', [
+            ['methods' => 'POST', 'callback' => [$this, 'toggle'], 'permission_callback' => [$this, 'can_pro']],
+        ]);
+
         // One generation step + snapshot — the client polls this to show live run progress.
         register_rest_route($this->rest_namespace, '/' . $this->rest_base . '/tick', [
             ['methods' => 'POST', 'callback' => [$this, 'tick'], 'permission_callback' => [$this, 'can_pro']],
@@ -43,6 +48,16 @@ final class AutomationController extends AbstractController
         // Publish a generated draft straight from the schedule's post list.
         register_rest_route($this->rest_namespace, '/automation/post/(?P<id>\d+)/publish', [
             ['methods' => 'POST', 'callback' => [$this, 'publish_post'], 'permission_callback' => [$this, 'can_publish']],
+        ]);
+
+        // Delete a generated post (trash) from the schedule's post list.
+        register_rest_route($this->rest_namespace, '/automation/post/(?P<id>\d+)', [
+            ['methods' => 'DELETE', 'callback' => [$this, 'delete_post'], 'permission_callback' => [$this, 'can_delete']],
+        ]);
+
+        // Clear a failed generation row from a schedule's failure list.
+        register_rest_route($this->rest_namespace, '/automation/failure/(?P<id>\d+)', [
+            ['methods' => 'DELETE', 'callback' => [$this, 'clear_failure'], 'permission_callback' => [$this, 'can_pro']],
         ]);
     }
 
@@ -109,10 +124,66 @@ final class AutomationController extends AbstractController
         ], 200);
     }
 
+    /** Pause or resume a schedule. Resuming recomputes the next run from now. */
+    public function toggle(WP_REST_Request $request): WP_REST_Response
+    {
+        $id       = (string) $request->get_param('id');
+        $schedule = Schedules::get($id);
+        if (!$schedule) {
+            return new WP_REST_Response(['error' => __('Schedule not found.', 'wp-wand')], 404);
+        }
+
+        $enabled = empty($schedule['enabled']);
+        Schedules::update($id, [
+            'enabled'  => $enabled,
+            'next_run' => $enabled ? Schedules::next_run_from_now((string) $schedule['frequency']) : 0,
+        ]);
+
+        $fresh = Schedules::get($id);
+        return new WP_REST_Response(['schedule' => $fresh ? $this->present($fresh) : null], 200);
+    }
+
     /** Advance the generation queue by one step; returns a progress snapshot. */
     public function tick(): WP_REST_Response
     {
         return new WP_REST_Response((new JobRunner())->tick(), 200);
+    }
+
+    public function can_delete(): bool
+    {
+        return current_user_can('delete_posts') && function_exists('wpwand_pro_init');
+    }
+
+    /** Trash a generated post (only posts this plugin scheduled). */
+    public function delete_post(WP_REST_Request $request): WP_REST_Response
+    {
+        $post_id = absint($request->get_param('id'));
+        if (!$post_id || get_post_meta($post_id, '_wpwand_schedule_id', true) === '') {
+            return new WP_REST_Response(['error' => __('Not a scheduled post.', 'wp-wand')], 400);
+        }
+
+        $trashed = wp_trash_post($post_id);
+        if (!$trashed) {
+            return new WP_REST_Response(['error' => __('Could not delete the post.', 'wp-wand')], 200);
+        }
+
+        return new WP_REST_Response(['deleted' => true, 'id' => $post_id], 200);
+    }
+
+    /** Remove a failed generation row (and its job) so it stops showing in the failure list. */
+    public function clear_failure(WP_REST_Request $request): WP_REST_Response
+    {
+        global $wpdb;
+        $row_id = absint($request->get_param('id'));
+        if (!$row_id) {
+            return new WP_REST_Response(['error' => __('Invalid row.', 'wp-wand')], 400);
+        }
+        $jt = $wpdb->prefix . 'wpwand_gen_jobs';
+        $pt = $wpdb->prefix . 'wpwand_generated_post';
+        $wpdb->delete($jt, ['row_id' => $row_id], ['%d']); // phpcs:ignore
+        $wpdb->delete($pt, ['id' => $row_id, 'status' => 'failed'], ['%d', '%s']); // phpcs:ignore
+
+        return new WP_REST_Response(['cleared' => true, 'id' => $row_id], 200);
     }
 
     public function can_publish(): bool
@@ -150,8 +221,50 @@ final class AutomationController extends AbstractController
         $s['last_run_h'] = !empty($s['last_run'])
             ? get_date_from_gmt(gmdate('Y-m-d H:i:s', (int) $s['last_run']), 'M j, Y g:i a')
             : '';
-        $s['posts'] = $this->posts_for((string) $s['id']);
+        $s['posts']    = $this->posts_for((string) $s['id']);
+        $s['failures'] = $this->failures_for((string) $s['id']);
         return $s;
+    }
+
+    /**
+     * Failed generations for a schedule. These never became WP posts (the job hit its retry limit),
+     * so they live only in the engine tables — surfaced here with the human reason so the user can
+     * see WHY a scheduled run produced nothing.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function failures_for(string $scheduleId): array
+    {
+        global $wpdb;
+        $jt = $wpdb->prefix . 'wpwand_gen_jobs';
+        $pt = $wpdb->prefix . 'wpwand_generated_post';
+
+        // schedule_id is stored inside the job's settings JSON: ..."schedule_id":"<id>"...
+        $needle = '%' . $wpdb->esc_like('"schedule_id":"' . $scheduleId . '"') . '%';
+        $rows = $wpdb->get_results( // phpcs:ignore WordPress.DB
+            $wpdb->prepare(
+                "SELECT j.row_id AS id, j.title AS title, j.error AS error, p.content AS content
+                 FROM {$jt} j LEFT JOIN {$pt} p ON p.id = j.row_id
+                 WHERE j.status = 'failed' AND j.settings LIKE %s
+                 ORDER BY j.id DESC LIMIT 20",
+                $needle
+            ),
+            ARRAY_A
+        );
+
+        $out = [];
+        foreach ($rows ?: [] as $r) {
+            $reason = (string) ($r['error'] ?? '');
+            if ($reason === '') {
+                $reason = (string) ($r['content'] ?? '');
+            }
+            $out[] = [
+                'id'     => (int) $r['id'],
+                'title'  => (string) ($r['title'] ?? ''),
+                'reason' => $reason !== '' ? $reason : __('Generation failed.', 'wp-wand'),
+            ];
+        }
+        return $out;
     }
 
     /**

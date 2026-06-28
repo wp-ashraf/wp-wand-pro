@@ -41,6 +41,11 @@ function confirmDelete() {
 	return window.confirm( __( 'Delete this schedule?', 'wp-wand' ) );
 }
 
+function confirmDeletePost() {
+	// eslint-disable-next-line no-alert
+	return window.confirm( __( 'Delete this post?', 'wp-wand' ) );
+}
+
 const freqLabel = ( v ) =>
 	( FREQUENCIES.find( ( f ) => f.value === v ) || {} ).label || v;
 const statusLabel = ( v ) =>
@@ -180,6 +185,25 @@ export default function App() {
 		onSuccess: invalidate,
 	} );
 
+	// Pause / resume a schedule from the row (no need to open the edit form).
+	const toggleMut = useMutation( {
+		mutationFn: ( id ) =>
+			api( `/automation/schedules/${ id }/toggle`, { method: 'POST' } ),
+		onSuccess: invalidate,
+	} );
+
+	const deletePostMut = useMutation( {
+		mutationFn: ( postId ) =>
+			api( `/automation/post/${ postId }`, { method: 'DELETE' } ),
+		onSuccess: invalidate,
+	} );
+
+	const clearFailureMut = useMutation( {
+		mutationFn: ( rowId ) =>
+			api( `/automation/failure/${ rowId }`, { method: 'DELETE' } ),
+		onSuccess: invalidate,
+	} );
+
 	const schedules = ( data && data.schedules ) || [];
 
 	return (
@@ -253,17 +277,63 @@ export default function App() {
 					onDelete={ ( id ) => delMut.mutate( id ) }
 					onRun={ ( id ) => runMut.mutate( id ) }
 					runningId={ runMut.isPending ? runMut.variables : null }
+					onToggle={ ( id ) => toggleMut.mutate( id ) }
+					togglingId={ toggleMut.isPending ? toggleMut.variables : null }
 					onPublish={ ( pid ) => publishMut.mutate( pid ) }
 					publishingId={
 						publishMut.isPending ? publishMut.variables : null
 					}
+					onDeletePost={ ( pid ) => deletePostMut.mutate( pid ) }
+					deletingPostId={
+						deletePostMut.isPending ? deletePostMut.variables : null
+					}
+					onClearFailure={ ( rid ) => clearFailureMut.mutate( rid ) }
 				/>
 			) }
 		</div>
 	);
 }
 
-function PostList( { posts, onPublish, publishingId } ) {
+function FailureList( { failures, onClear } ) {
+	if ( ! failures || ! failures.length ) {
+		return null;
+	}
+	return (
+		<div className="wpwa-failures">
+			<div className="wpwa-failures__head">
+				{ __( 'Failed generations', 'wp-wand' ) }
+			</div>
+			<ul className="wpwa-failures__list">
+				{ failures.map( ( f ) => (
+					<li key={ f.id } className="wpwa-failures__item">
+						<div className="wpwa-failures__body">
+							<span className="wpwa-failures__title">
+								{ f.title || __( '(untitled)', 'wp-wand' ) }
+							</span>
+							<span className="wpwa-failures__reason">
+								{ f.reason }
+							</span>
+						</div>
+						<button
+							className="wpwa-link wpwa-link--danger"
+							onClick={ () => onClear( f.id ) }
+						>
+							{ __( 'Dismiss', 'wp-wand' ) }
+						</button>
+					</li>
+				) ) }
+			</ul>
+		</div>
+	);
+}
+
+function PostList( {
+	posts,
+	onPublish,
+	publishingId,
+	onDeletePost,
+	deletingPostId,
+} ) {
 	if ( ! posts || ! posts.length ) {
 		return (
 			<div className="wpwa-posts wpwa-posts--empty">
@@ -319,6 +389,17 @@ function PostList( { posts, onPublish, publishingId } ) {
 									: __( 'Publish', 'wp-wand' ) }
 							</button>
 						) }
+						<button
+							className="wpwa-link wpwa-link--danger"
+							disabled={ deletingPostId === po.id }
+							onClick={ () =>
+								confirmDeletePost() && onDeletePost( po.id )
+							}
+						>
+							{ deletingPostId === po.id
+								? __( 'Deleting…', 'wp-wand' )
+								: __( 'Delete', 'wp-wand' ) }
+						</button>
 					</span>
 				</li>
 			) ) }
@@ -333,8 +414,13 @@ function ScheduleList( {
 	onDelete,
 	onRun,
 	runningId,
+	onToggle,
+	togglingId,
 	onPublish,
 	publishingId,
+	onDeletePost,
+	deletingPostId,
+	onClearFailure,
 } ) {
 	const [ expanded, setExpanded ] = useState( null );
 
@@ -444,6 +530,17 @@ function ScheduleList( {
 									</button>
 									<button
 										className="wpwa-link"
+										disabled={ togglingId === s.id }
+										onClick={ () => onToggle( s.id ) }
+									>
+										{ togglingId === s.id
+											? __( 'Saving…', 'wp-wand' )
+											: s.enabled
+											? __( 'Pause', 'wp-wand' )
+											: __( 'Activate', 'wp-wand' ) }
+									</button>
+									<button
+										className="wpwa-link"
 										onClick={ () => onEdit( s ) }
 									>
 										{ __( 'Edit', 'wp-wand' ) }
@@ -461,10 +558,16 @@ function ScheduleList( {
 							{ isOpen && (
 								<tr className="wpwa-detail">
 									<td colSpan={ 8 }>
+										<FailureList
+											failures={ s.failures }
+											onClear={ onClearFailure }
+										/>
 										<PostList
 											posts={ posts }
 											onPublish={ onPublish }
 											publishingId={ publishingId }
+											onDeletePost={ onDeletePost }
+											deletingPostId={ deletingPostId }
 										/>
 									</td>
 								</tr>

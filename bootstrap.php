@@ -64,7 +64,7 @@ add_action('plugins_loaded', static function () {
 add_filter('wpwand_disabled_modules', static function ($disabled) {
     $disabled = (array) $disabled;
     // Automation is OFF for this release.
-    $disabled[] = 'automation';
+    // $disabled[] = 'automation';
     return array_values(array_unique($disabled));
 });
 
