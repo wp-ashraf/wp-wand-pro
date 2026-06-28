@@ -22,6 +22,10 @@ define('WPWAND_PRO_DIR_', __DIR__);
 define('WPWAND_PRO_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPWAND_PRO_PLUGIN_URL', plugin_dir_url(__FILE__));
 
+// New (React + REST) architecture: PSR-4 autoloader + Pro feature modules registered into the
+// free plugin's shared registry. Loaded early so the module hook is in place before free boots.
+require_once __DIR__ . '/bootstrap.php';
+
 
 
 require __DIR__ . '/vendor/action-scheduler/action-scheduler.php';
