@@ -46,6 +46,10 @@ final class BulkController extends AbstractController
         register_rest_route($this->rest_namespace, '/' . $this->rest_base . '/(?P<id>\d+)/approve', [
             ['methods' => 'POST', 'callback' => [$this, 'approve'], 'permission_callback' => [$this, 'can_pro']],
         ]);
+        // Re-queue a failed bulk post so the engine generates it again (manual restart).
+        register_rest_route($this->rest_namespace, '/' . $this->rest_base . '/(?P<id>\d+)/retry', [
+            ['methods' => 'POST', 'callback' => [$this, 'retry'], 'permission_callback' => [$this, 'can_pro']],
+        ]);
     }
 
     public function destroy(WP_REST_Request $request): WP_REST_Response
@@ -55,6 +59,30 @@ final class BulkController extends AbstractController
         $ok = $wpdb->delete($this->table(), ['id' => $id], ['%d']);
 
         return new WP_REST_Response(['deleted' => (bool) $ok], 200);
+    }
+
+    /** Re-queue a failed bulk post so the engine regenerates it (manual restart). */
+    public function retry(WP_REST_Request $request): WP_REST_Response
+    {
+        global $wpdb;
+        $id  = absint($request['id']);
+        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE id = %d", $id), ARRAY_A); // phpcs:ignore
+        if (!$row) {
+            return new WP_REST_Response(['error' => __('Not found.', 'wp-wand')], 404);
+        }
+
+        if (!(new JobRunner())->retry($id)) {
+            return new WP_REST_Response(['error' => __('Nothing to retry for this post.', 'wp-wand')], 200);
+        }
+
+        // Re-arm the WP-Cron drainer for the cron engines; the browser engine picks it up on the
+        // next heartbeat (the list now reports a pending job, so generation resumes).
+        $engine = (string) get_option('wpwand_gen_engine', 'browser');
+        if (($engine === 'wp_cron' || $engine === 'system_cron') && !wp_next_scheduled('wpwand_gen_cron_tick')) {
+            wp_schedule_event(time() + 30, 'wpwand_minutely', 'wpwand_gen_cron_tick');
+        }
+
+        return new WP_REST_Response(['retried' => true, 'id' => $id], 200);
     }
 
     public function show(WP_REST_Request $request): WP_REST_Response

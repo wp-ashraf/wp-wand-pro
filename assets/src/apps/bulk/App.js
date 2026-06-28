@@ -79,7 +79,7 @@ const statusLabel = ( s ) =>
 		failed: 'Failed',
 	} )[ s ] || s;
 
-function ViewModal( { id, onClose } ) {
+function ViewModal( { id, onClose, onRetry } ) {
 	// While the post is still generating, poll so the modal shows the content fill in
 	// section by section (bulk generates server-side, not token-stream).
 	const { data, isLoading } = useQuery( {
@@ -135,6 +135,14 @@ function ViewModal( { id, onClose } ) {
 									'wp-wand'
 								) }
 						</p>
+						{ onRetry && (
+							<button
+								className="wpwb-hbtn wpwb-hbtn--approve"
+								onClick={ () => onRetry( id ) }
+							>
+								{ __( 'Retry generation', 'wp-wand' ) }
+							</button>
+						) }
 					</div>
 				) }
 				{ ! isLoading && ! generating && ! failed && (
@@ -172,6 +180,12 @@ function BulkList( { onCreate } ) {
 	const remove = useMutation( {
 		mutationFn: ( id ) =>
 			api( `/bulk-posts/${ id }`, { method: 'DELETE' } ),
+		onSuccess: refresh,
+	} );
+	// Re-queue a failed post so the engine generates it again.
+	const retry = useMutation( {
+		mutationFn: ( id ) =>
+			api( `/bulk-posts/${ id }/retry`, { method: 'POST' } ),
 		onSuccess: refresh,
 	} );
 
@@ -387,15 +401,27 @@ function BulkList( { onCreate } ) {
 									>
 										{ __( 'View', 'wp-wand' ) }
 									</button>
-									<button
-										className="wpwb-hbtn wpwb-hbtn--approve"
-										disabled={ approve.isPending }
-										onClick={ () =>
-											approve.mutate( it.id )
-										}
-									>
-										{ __( 'Approve', 'wp-wand' ) }
-									</button>
+									{ it.status === 'failed' ? (
+										<button
+											className="wpwb-hbtn wpwb-hbtn--approve"
+											disabled={ retry.isPending }
+											onClick={ () =>
+												retry.mutate( it.id )
+											}
+										>
+											{ __( 'Retry', 'wp-wand' ) }
+										</button>
+									) : (
+										<button
+											className="wpwb-hbtn wpwb-hbtn--approve"
+											disabled={ approve.isPending }
+											onClick={ () =>
+												approve.mutate( it.id )
+											}
+										>
+											{ __( 'Approve', 'wp-wand' ) }
+										</button>
+									) }
 									<button
 										className="wpwb-hbtn wpwb-hbtn--delete"
 										onClick={ () =>
@@ -413,7 +439,14 @@ function BulkList( { onCreate } ) {
 			) }
 
 			{ viewId && (
-				<ViewModal id={ viewId } onClose={ () => setViewId( null ) } />
+				<ViewModal
+					id={ viewId }
+					onClose={ () => setViewId( null ) }
+					onRetry={ ( id ) => {
+						retry.mutate( id );
+						setViewId( null );
+					} }
+				/>
 			) }
 		</>
 	);

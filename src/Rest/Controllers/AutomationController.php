@@ -7,6 +7,7 @@ use WP_REST_Response;
 use WPWand\Automation\AutomationRunner;
 use WPWand\Automation\Schedules;
 use WPWand\Generation\JobRunner;
+use WPWand\Generation\UsageLimits;
 
 /**
  * REST API for scheduled post automation (Pro). CRUD over saved schedules plus a "run now" action.
@@ -75,6 +76,14 @@ final class AutomationController extends AbstractController
                 'statuses'    => ['draft', 'pending', 'publish'],
                 // Live queue state — lets the page show/advance generation without a manual refresh.
                 'queue'       => (new JobRunner())->snapshot(),
+                // Monthly automation allowance (mirrors the Bulk page's counter + upgrade gate).
+                'usage'       => [
+                    'used'      => UsageLimits::automation_used(),
+                    'limit'     => UsageLimits::automation_limit(),
+                    'text'      => UsageLimits::automation_text(),
+                    'can_run'   => UsageLimits::can_automation(),
+                    'upgrade_url' => 'https://wpwand.com/pro-plugin',
+                ],
             ],
         ], 200);
     }
@@ -111,7 +120,8 @@ final class AutomationController extends AbstractController
             return new WP_REST_Response(['error' => __('Schedule not found.', 'wp-wand')], 404);
         }
 
-        $queued = (new AutomationRunner())->run_schedule($schedule);
+        $runner = new AutomationRunner();
+        $queued = $runner->run_schedule($schedule);
 
         // Enqueue only and return immediately — the client then polls /tick to drive generation
         // and show live progress. (If the page is closed, the WP-Cron drainer finishes the queue.)
@@ -119,6 +129,9 @@ final class AutomationController extends AbstractController
 
         return new WP_REST_Response([
             'queued'   => $queued,
+            // Why nothing was queued (model error / limit reached), so the UI shows the REAL reason
+            // instead of always blaming the topic list.
+            'error'    => $runner->last_error(),
             'snapshot' => (new JobRunner())->snapshot(),
             'schedule' => $fresh ? $this->present($fresh) : null,
         ], 200);

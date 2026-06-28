@@ -9,7 +9,7 @@ use WPWand\License\LicenseService;
  *
  * Two independent monthly buckets:
  *   - BULK       (manual "Bulk Posts")     Solo 100 / Growth 300 / Agency unlimited
- *   - AUTOMATION (scheduled automation)    10× the bulk cap → Solo 1000 / Growth 3000 / Agency ∞
+ *   - AUTOMATION (scheduled automation)    2× the bulk cap → Solo 200 / Growth 600 / Agency ∞
  *
  * The effective cap is derived from the tier at check time via {@see limits()}, NOT from a value
  * frozen at activation — so changing these numbers takes effect for every existing install with no
@@ -38,7 +38,7 @@ class UsageLimits
         }
         $bulk = $marker >= 20 ? 300 : 100; // growth : solo
 
-        return ['bulk' => $bulk, 'automation' => $bulk * 10];
+        return ['bulk' => $bulk, 'automation' => $bulk * 2];
     }
 
     // ---- Bulk ------------------------------------------------------------------------------
@@ -145,5 +145,14 @@ class UsageLimits
         return $limit === self::UNLIMITED
             ? __('Unlimited', 'wp-wand')
             : self::bulk_used() . '/' . $limit;
+    }
+
+    /** Human label for the automation counter, e.g. "30/600" or "Unlimited". */
+    public static function automation_text(): string
+    {
+        $limit = self::automation_limit();
+        return $limit === self::UNLIMITED
+            ? __('Unlimited', 'wp-wand')
+            : self::automation_used() . '/' . $limit;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace WPWand\Automation;
 
+use WPWand\Generation\ErrorFormatter;
 use WPWand\Generation\JobRunner;
 use WPWand\Generation\UsageLimits;
 
@@ -21,6 +22,14 @@ final class AutomationRunner
     private const SCHEDULE  = 'wpwand_5min';
     private const LOCK      = 'wpwand_automation_lock';
     private const LOCK_TTL  = 290;
+
+    /** Why the last run produced no posts (model error / limit), for the "Run now" feedback. */
+    private string $lastError = '';
+
+    public function last_error(): string
+    {
+        return $this->lastError;
+    }
 
     public function register(): void
     {
@@ -89,11 +98,14 @@ final class AutomationRunner
             'runs'     => (int) ($schedule['runs'] ?? 0) + 1,
         ];
 
-        // Respect the monthly automation cap (10× the bulk cap; unlimited for agency). If the cap is
+        $this->lastError = '';
+
+        // Respect the monthly automation cap (2× the bulk cap; unlimited for agency). If the cap is
         // already used up, just wait for the next run (the counter resets monthly) — do NOT treat
         // this as the topic list being exhausted, so the schedule stays enabled.
         $remaining = UsageLimits::automation_remaining();
         if ($remaining <= 0) {
+            $this->lastError = __('Monthly automation limit reached. Upgrade to a higher plan to generate more.', 'wp-wand');
             Schedules::update($id, $patch);
             return 0;
         }
@@ -102,8 +114,10 @@ final class AutomationRunner
         $titles = $this->titles_for($schedule, $count);
 
         if (empty($titles)) {
-            // List exhausted with looping off → stop the schedule rather than spin idle.
-            if (($schedule['mode'] ?? 'list') === 'list' && empty($schedule['loop'])) {
+            // If the AI title generation failed (prompt mode), surface the real model error instead
+            // of the generic "list finished" message.
+            if ($this->lastError === '' && ($schedule['mode'] ?? 'list') === 'list' && empty($schedule['loop'])) {
+                // List exhausted with looping off → stop the schedule rather than spin idle.
                 $patch['enabled']  = false;
                 $patch['next_run'] = 0;
             }
@@ -204,7 +218,13 @@ final class AutomationRunner
             . ($tone !== '' ? " Tone: {$tone}." : '');
 
         $res = wpwand_generate_ai_content($prompt, 1, ['max_tokens' => 400]);
-        if (!is_object($res) || isset($res->error) || !isset($res->choices[0])) {
+        if (is_object($res) && isset($res->error)) {
+            // Bubble up the real provider message (e.g. model rate-limited/down) for the UI.
+            $this->lastError = ErrorFormatter::humanize($res->error, __('Could not generate titles.', 'wp-wand'));
+            return [];
+        }
+        if (!is_object($res) || !isset($res->choices[0])) {
+            $this->lastError = __('The AI returned no title ideas. Please try again.', 'wp-wand');
             return [];
         }
         $choice = $res->choices[0];

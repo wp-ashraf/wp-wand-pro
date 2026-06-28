@@ -167,14 +167,19 @@ export default function App() {
 		mutationFn: ( id ) =>
 			api( `/automation/schedules/${ id }/run`, { method: 'POST' } ),
 		onSuccess: ( r ) => {
-			setNotice(
-				r && r.queued === 0
-					? __(
+			if ( r && r.queued === 0 ) {
+				// Show the REAL reason (model error / limit reached) when the server gives one;
+				// only fall back to "list finished" when there's no specific error.
+				setNotice(
+					r.error ||
+						__(
 							'Nothing to generate — the topic list may be finished.',
 							'wp-wand'
-					  )
-					: ''
-			);
+						)
+				);
+			} else {
+				setNotice( '' );
+			}
 			invalidate();
 		},
 	} );
@@ -205,6 +210,8 @@ export default function App() {
 	} );
 
 	const schedules = ( data && data.schedules ) || [];
+	const usage = data?.meta?.usage || {};
+	const capReached = usage.can_run === false;
 
 	return (
 		<div className="wpwa">
@@ -220,18 +227,47 @@ export default function App() {
 						) }
 					</p>
 				</div>
-				{ ! editing && (
-					<button
-						className="wpwa-btn wpwa-btn--primary"
-						onClick={ () => {
-							setError( '' );
-							setEditing( blankForm() );
-						} }
-					>
-						{ __( '+ New schedule', 'wp-wand' ) }
-					</button>
-				) }
+				<div className="wpwa__header-right">
+					{ usage.text && (
+						<span className="wpwa-counter">
+							<strong>
+								{ __( 'Automation left:', 'wp-wand' ) }
+							</strong>{ ' ' }
+							{ usage.text }
+						</span>
+					) }
+					{ ! editing && (
+						<button
+							className="wpwa-btn wpwa-btn--primary"
+							onClick={ () => {
+								setError( '' );
+								setEditing( blankForm() );
+							} }
+						>
+							{ __( '+ New schedule', 'wp-wand' ) }
+						</button>
+					) }
+				</div>
 			</div>
+
+			{ capReached && (
+				<div className="wpwa-notice wpwa-notice--upgrade">
+					<span>
+						{ __(
+							'You’ve reached your monthly automation limit. Schedules will resume after the monthly reset.',
+							'wp-wand'
+						) }
+					</span>
+					<a
+						className="wpwa-btn wpwa-btn--primary"
+						href={ usage.upgrade_url || 'https://wpwand.com/pro-plugin' }
+						target="_blank"
+						rel="noreferrer"
+					>
+						{ __( 'Upgrade plan', 'wp-wand' ) }
+					</a>
+				</div>
+			) }
 
 			{ running && (
 				<div className="wpwa-notice wpwa-notice--live">

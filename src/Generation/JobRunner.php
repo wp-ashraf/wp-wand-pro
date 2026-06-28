@@ -414,6 +414,33 @@ final class JobRunner
 
     // ---- persistence ---------------------------------------------------------------------
 
+    /**
+     * Reset a failed/stuck job back to the start of the queue so a driver re-generates it from
+     * scratch. Returns false when there's no job for that post row. Powers the Bulk "Retry" action.
+     */
+    public function retry(int $row_id): bool
+    {
+        global $wpdb;
+        $job_id = (int) $wpdb->get_var(
+            $wpdb->prepare("SELECT id FROM {$this->jobs_table()} WHERE row_id = %d", $row_id) // phpcs:ignore
+        );
+        if (!$job_id) {
+            return false;
+        }
+
+        $this->update_job($job_id, [
+            'status'   => 'pending',
+            'attempts' => 0,
+            'step'     => 0,
+            'outline'  => null,
+            'sections' => wp_json_encode([]),
+            'error'    => '',
+        ]);
+        $this->update_post($row_id, '', 'pending');
+
+        return true;
+    }
+
     private function update_job(int $id, array $data): void
     {
         global $wpdb;

@@ -245,6 +245,28 @@
 		font-weight: 600;
 		justify-content: flex-start;
 	}
+
+	&--upgrade {
+		background: #fcf4e6;
+		border-color: #f0d59f;
+		color: #7a5a1f;
+	}
+}
+
+.wpwa__header-right {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.wpwa-counter {
+	font-size: 13px;
+	color: var( --wpwa-muted );
+	white-space: nowrap;
+
+	strong {
+		color: inherit;
+	}
 }
 
 .wpwa-spinner {
