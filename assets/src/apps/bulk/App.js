@@ -92,6 +92,7 @@ function ViewModal( { id, onClose } ) {
 	} );
 	const generating =
 		data?.status && data.status !== 'done' && data.status !== 'failed';
+	const failed = data?.status === 'failed';
 	const content = data?.content || '';
 	// While generating, reveal newly-arrived sections as smooth plain text (avoids the whole
 	// markdown re-render flashing on every poll). Switch to formatted markdown once done.
@@ -122,7 +123,21 @@ function ViewModal( { id, onClose } ) {
 						<span className="wpwb-stream-caret" />
 					</div>
 				) }
-				{ ! isLoading && ! generating && (
+				{ ! isLoading && failed && (
+					<div className="wpwb-notice wpwb-notice--error">
+						<strong>
+							{ __( 'Generation failed', 'wp-wand' ) }
+						</strong>
+						<p>
+							{ content ||
+								__(
+									'This post could not be generated. Please try again.',
+									'wp-wand'
+								) }
+						</p>
+					</div>
+				) }
+				{ ! isLoading && ! generating && ! failed && (
 					<div
 						className="wpwb-md"
 						dangerouslySetInnerHTML={ {

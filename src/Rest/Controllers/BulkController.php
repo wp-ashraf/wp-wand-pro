@@ -140,7 +140,7 @@ final class BulkController extends AbstractController
         );
 
         if (is_object($content) && isset($content->error)) {
-            $msg = isset($content->error->message) ? (string) $content->error->message : __('Failed.', 'wp-wand');
+            $msg = \WPWand\Generation\ErrorFormatter::humanize($content->error, __('Failed.', 'wp-wand'));
             return new WP_REST_Response(['error' => $msg], 200);
         }
 

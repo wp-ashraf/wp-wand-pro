@@ -52,6 +52,23 @@ add_action('plugins_loaded', static function () {
 }, 21);
 
 /*
+ * Per-release module switches.
+ *
+ * Add a module id here to ship a release WITHOUT that feature: a disabled module registers
+ * neither its admin page nor its REST routes, and (for Automation) its WP-Cron scheduler never
+ * boots — so nothing generates in the background. This is the "might not release Automation this
+ * version" flow. To turn a module back on, remove it from this list (or filter it back out via
+ * `wpwand_disabled_modules` elsewhere). Module ids: bulk, automation, custom-prompts, woocommerce,
+ * seo, license.
+ */
+add_filter('wpwand_disabled_modules', static function ($disabled) {
+    $disabled = (array) $disabled;
+    // Automation is OFF for this release.
+    $disabled[] = 'automation';
+    return array_values(array_unique($disabled));
+});
+
+/*
  * Register Pro feature modules into the shared registry. Fired by the free plugin
  * (\WPWand\Core\Plugin::boot_modules) after all plugins are loaded.
  */

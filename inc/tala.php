@@ -419,47 +419,40 @@ if (!class_exists('WPWandUdChecker')) {
 
         public function request()
         {
-            // Cache the DECODED payload (not the raw HTTP response): an object on success, or the
-            // 'none' sentinel on failure so we don't refetch on every page load.
-            $cached = get_transient($this->cache_key);
-            if (false !== $cached && $this->cache_allowed) {
-                return is_object($cached) ? $cached : false;
+
+            $remote = get_transient($this->cache_key);
+
+            if (false === $remote || !$this->cache_allowed) {
+
+                $home_url = urlencode(home_url());
+                $code = get_option('wpwand_pro_tala_key');
+                $code = str_replace(['wpdmag-', 'wpdmso-','wpdmgr-'],'', $code);
+                // Build the request
+
+                $url = "https://tala.finestwp.co/wp-json/fdl/v2/envato-plugin?key={$code}&url={$home_url}&type=updateCheck&plugin=wpwand";
+
+                $remote = wp_safe_remote_get(
+                    $url,
+                    array(
+                        // 'timeout' => 10,
+                        'headers' => array(
+                            'Accept' => 'application/json',
+                        ),
+                    )
+                );
+
+                // if (
+                //     is_wp_error($remote)
+                //     || 200 !== wp_remote_retrieve_response_code($remote)
+                //     || empty(wp_remote_retrieve_body($remote))
+                // ) {
+                //     return false;
+                // }
+
+                set_transient($this->cache_key, $remote, DAY_IN_SECONDS);
             }
 
-            $home_url = urlencode(home_url());
-            $code = get_option('wpwand_pro_tala_key');
-            $code = str_replace(['wpdmag-', 'wpdmso-', 'wpdmgr-'], '', $code);
-
-            $url = "https://tala.finestwp.co/wp-json/fdl/v2/envato-plugin?key={$code}&url={$home_url}&type=updateCheck&plugin=wpwand";
-
-            $response = wp_safe_remote_get(
-                $url,
-                array(
-                    'timeout' => 15,
-                    'headers' => array(
-                        'Accept' => 'application/json',
-                    ),
-                )
-            );
-
-            // On any error, short-cache a negative result and bail — never cache a bad response
-            // as if it were valid update data (which previously broke the update check for a day).
-            if (
-                is_wp_error($response)
-                || 200 !== (int) wp_remote_retrieve_response_code($response)
-                || empty(wp_remote_retrieve_body($response))
-            ) {
-                set_transient($this->cache_key, 'none', HOUR_IN_SECONDS);
-                return false;
-            }
-
-            $remote = json_decode(wp_remote_retrieve_body($response));
-            if (!is_object($remote) || empty($remote->version)) {
-                set_transient($this->cache_key, 'none', HOUR_IN_SECONDS);
-                return false;
-            }
-
-            set_transient($this->cache_key, $remote, DAY_IN_SECONDS);
+            $remote = json_decode(wp_remote_retrieve_body($remote));
 
             return $remote;
         }

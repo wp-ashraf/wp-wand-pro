@@ -351,7 +351,7 @@ final class JobRunner
         $res = wpwand_generate_ai_content($prompt, 1, $args);
 
         if (is_object($res) && isset($res->error)) {
-            $msg = isset($res->error->message) ? (string) $res->error->message : 'Generation failed.';
+            $msg = \WPWand\Generation\ErrorFormatter::humanize($res->error, __('Generation failed.', 'wp-wand'));
             throw new \RuntimeException($msg);
         }
 
@@ -431,8 +431,11 @@ final class JobRunner
     {
         $attempts = (int) $job['attempts'] + 1;
         if ($attempts >= self::MAX_ATTEMPTS) {
-            $this->update_job($job['id'], ['status' => 'failed', 'attempts' => $attempts, 'error' => $error]);
-            $this->update_post($job['row_id'], (string) ($job['title'] ?? ''), 'failed');
+            $human = \WPWand\Generation\ErrorFormatter::humanize($error, __('Generation failed.', 'wp-wand'));
+            $this->update_job($job['id'], ['status' => 'failed', 'attempts' => $attempts, 'error' => $human]);
+            // Store the failure reason in the post row's content so the Bulk list popup can show
+            // *why* it failed (the row keeps its own title column, so content is free to reuse).
+            $this->update_post($job['row_id'], $human, 'failed');
             return;
         }
         // Leave it pending for the next tick to retry.
