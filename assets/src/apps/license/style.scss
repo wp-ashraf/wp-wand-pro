@@ -56,6 +56,48 @@
 	padding: 12px 0;
 }
 
+.wpwl-update {
+	margin-top: 16px;
+
+	&__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	&__title {
+		font-weight: 600;
+		font-size: 14px;
+	}
+
+	&__sub {
+		color: var( --wpwl-muted );
+		font-size: 13px;
+		margin-top: 2px;
+	}
+
+	&__avail {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		margin-top: 16px;
+		padding: 12px 14px;
+		background: #eef6ec;
+		border: 1px solid #b7ddb0;
+		border-radius: 8px;
+		font-size: 13px;
+		color: #1e5e22;
+	}
+
+	&__ok {
+		margin-top: 12px;
+		color: var( --wpwl-muted );
+		font-size: 13px;
+	}
+}
+
 .wpwl-status {
 	display: flex;
 	align-items: center;

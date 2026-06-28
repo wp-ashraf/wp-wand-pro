@@ -18,6 +18,82 @@ const TIER_LABELS = {
 	none: __( 'Not activated', 'wp-wand' ),
 };
 
+/**
+ * Plugin update box — shows the installed version, lets the admin re-check against the server,
+ * and surfaces an "update available" link to the WordPress Plugins screen (where the update,
+ * injected by UpdateChecker into site_transient_update_plugins, can be applied).
+ */
+function UpdateBox() {
+	const qc = useQueryClient();
+	const { data, isLoading } = useQuery( {
+		queryKey: [ 'license-update' ],
+		queryFn: () => api( '/license/update' ),
+	} );
+
+	const checkMut = useMutation( {
+		mutationFn: () => api( '/license/update', { method: 'POST' } ),
+		onSuccess: ( res ) => qc.setQueryData( [ 'license-update' ], res ),
+	} );
+
+	const available = data && data.update_available;
+
+	return (
+		<div className="wpwl-card wpwl-update">
+			<div className="wpwl-update__row">
+				<div>
+					<div className="wpwl-update__title">
+						{ __( 'Plugin updates', 'wp-wand' ) }
+					</div>
+					<div className="wpwl-update__sub">
+						{ isLoading
+							? __( 'Checking…', 'wp-wand' )
+							: __( 'Installed version:', 'wp-wand' ) +
+							  ' ' +
+							  ( data?.current || '—' ) +
+							  ( available
+									? ' · ' +
+									  __( 'Latest:', 'wp-wand' ) +
+									  ' ' +
+									  data.latest
+									: '' ) }
+					</div>
+				</div>
+				<button
+					className="wpwl-btn wpwl-btn--ghost"
+					disabled={ checkMut.isPending }
+					onClick={ () => checkMut.mutate() }
+				>
+					{ checkMut.isPending
+						? __( 'Checking…', 'wp-wand' )
+						: __( 'Check for updates', 'wp-wand' ) }
+				</button>
+			</div>
+
+			{ available ? (
+				<div className="wpwl-update__avail">
+					<span>
+						{ __( 'A new version', 'wp-wand' ) } ({ data.latest }){ ' ' }
+						{ __( 'is available.', 'wp-wand' ) }
+					</span>
+					<a
+						className="wpwl-btn wpwl-btn--primary"
+						href={ data.updates_url }
+					>
+						{ __( 'Go to updates', 'wp-wand' ) }
+					</a>
+				</div>
+			) : (
+				! isLoading &&
+				! checkMut.isPending && (
+					<div className="wpwl-update__ok">
+						{ __( 'You’re on the latest version.', 'wp-wand' ) }
+					</div>
+				)
+			) }
+		</div>
+	);
+}
+
 export default function App() {
 	const qc = useQueryClient();
 	const [ key, setKey ] = useState( '' );
@@ -166,6 +242,8 @@ export default function App() {
 					</>
 				) }
 			</div>
+
+			{ active && <UpdateBox /> }
 
 			<p className="wpwl-help">
 				{ __(

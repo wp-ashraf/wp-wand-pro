@@ -3,6 +3,7 @@
 namespace WPWand\Automation;
 
 use WPWand\Generation\JobRunner;
+use WPWand\Generation\UsageLimits;
 
 /**
  * Phase 3 — scheduled, recurring post automation.
@@ -81,13 +82,24 @@ final class AutomationRunner
     {
         $id     = (string) $schedule['id'];
         $count  = max(1, (int) $schedule['count']);
-        $titles = $this->titles_for($schedule, $count);
 
         $patch = [
             'last_run' => time(),
             'next_run' => Schedules::next_run_from_now((string) $schedule['frequency']),
             'runs'     => (int) ($schedule['runs'] ?? 0) + 1,
         ];
+
+        // Respect the monthly automation cap (10× the bulk cap; unlimited for agency). If the cap is
+        // already used up, just wait for the next run (the counter resets monthly) — do NOT treat
+        // this as the topic list being exhausted, so the schedule stays enabled.
+        $remaining = UsageLimits::automation_remaining();
+        if ($remaining <= 0) {
+            Schedules::update($id, $patch);
+            return 0;
+        }
+        $count  = min($count, $remaining);
+
+        $titles = $this->titles_for($schedule, $count);
 
         if (empty($titles)) {
             // List exhausted with looping off → stop the schedule rather than spin idle.
@@ -118,6 +130,7 @@ final class AutomationRunner
         ];
 
         (new JobRunner())->enqueue($titles, $settings);
+        UsageLimits::consume_automation(count($titles)); // count against the monthly automation cap
         $this->ensure_drainer();
 
         Schedules::update($id, $patch);

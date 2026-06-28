@@ -26,9 +26,26 @@ class UpdateChecker
 {
     private const CACHE_KEY = 'wpwand_pro_update';
 
-    private string $plugin_slug;
-    private string $plugin_basename;
-    private string $version;
+    private string $plugin_slug     = '';
+    private string $plugin_basename = '';
+    private string $version         = '0';
+    private bool $booted            = false;
+
+    /** Populate the plugin metadata. Safe to call outside admin (e.g. from a REST request). */
+    private function boot_meta(): void
+    {
+        if ($this->booted) {
+            return;
+        }
+        if (!function_exists('get_plugin_data')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+        $data                  = get_plugin_data(WPWAND_PRO_FILE_);
+        $this->plugin_slug     = plugin_basename(WPWAND_PRO_DIR_);
+        $this->plugin_basename = plugin_basename(WPWAND_PRO_FILE_);
+        $this->version         = (string) ($data['Version'] ?? '0');
+        $this->booted          = true;
+    }
 
     public function register(): void
     {
@@ -36,18 +53,37 @@ class UpdateChecker
         if (!is_admin()) {
             return;
         }
-        if (!function_exists('get_plugin_data')) {
-            require_once ABSPATH . 'wp-admin/includes/plugin.php';
-        }
-
-        $data                  = get_plugin_data(WPWAND_PRO_FILE_);
-        $this->plugin_slug     = plugin_basename(WPWAND_PRO_DIR_);
-        $this->plugin_basename = plugin_basename(WPWAND_PRO_FILE_);
-        $this->version         = (string) ($data['Version'] ?? '0');
+        $this->boot_meta();
 
         add_filter('plugins_api', [$this, 'info'], 20, 3);
         add_filter('site_transient_update_plugins', [$this, 'update']);
         add_action('upgrader_process_complete', [$this, 'purge'], 10, 2);
+    }
+
+    /**
+     * Installed vs latest version for the License screen's update box.
+     *
+     * @return array{current:string, latest:string, update_available:bool, updates_url:string}
+     */
+    public function status(): array
+    {
+        $this->boot_meta();
+        $remote = $this->remote();
+        $latest = $remote && !empty($remote->version) ? (string) $remote->version : '';
+
+        return [
+            'current'          => $this->version,
+            'latest'           => $latest,
+            'update_available' => $latest !== '' && version_compare($this->version, $latest, '<'),
+            'updates_url'      => self_admin_url('plugins.php'),
+        ];
+    }
+
+    /** Force the next check to hit the server (drops the cached payload + WP's plugin-update cache). */
+    public function flush(): void
+    {
+        delete_transient(self::CACHE_KEY);
+        delete_site_transient('update_plugins'); // make WP re-run its update scan too
     }
 
     /**

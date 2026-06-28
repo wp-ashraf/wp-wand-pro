@@ -5,6 +5,7 @@ namespace WPWand\Rest\Controllers;
 use WP_REST_Request;
 use WP_REST_Response;
 use WPWand\License\LicenseService;
+use WPWand\License\UpdateChecker;
 
 /**
  * License activation REST API (Pro) — a thin wpwand/v1 layer over {@see LicenseService}, which
@@ -40,6 +41,12 @@ final class LicenseController extends AbstractController
         register_rest_route($this->rest_namespace, '/' . $this->rest_base . '/deactivate', [
             ['methods' => 'POST', 'callback' => [$this, 'deactivate'], 'permission_callback' => [$this, 'can_admin']],
         ]);
+
+        // Plugin update status + a "Check for updates" action for the License screen.
+        register_rest_route($this->rest_namespace, '/' . $this->rest_base . '/update', [
+            ['methods' => 'GET',  'callback' => [$this, 'update_status'], 'permission_callback' => [$this, 'can_admin']],
+            ['methods' => 'POST', 'callback' => [$this, 'update_check'],  'permission_callback' => [$this, 'can_admin']],
+        ]);
     }
 
     public function can_admin(): bool
@@ -65,5 +72,19 @@ final class LicenseController extends AbstractController
     {
         $result = $this->service->deactivate();
         return new WP_REST_Response($result['state'], 200);
+    }
+
+    /** GET — current vs latest version (uses the cached check). */
+    public function update_status(): WP_REST_Response
+    {
+        return new WP_REST_Response((new UpdateChecker())->status(), 200);
+    }
+
+    /** POST — force a fresh check against the server, then return the status. */
+    public function update_check(): WP_REST_Response
+    {
+        $checker = new UpdateChecker();
+        $checker->flush();
+        return new WP_REST_Response($checker->status(), 200);
     }
 }

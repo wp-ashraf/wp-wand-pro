@@ -162,8 +162,8 @@ final class BulkController extends AbstractController
     {
         global $wpdb;
 
-        // Respect the tier limit (Solo 10 / Growth 20 / Agency unlimited).
-        if (function_exists('wpwand_pgs_rate_limi') && !wpwand_pgs_rate_limi()) {
+        // Respect the tier cap (Solo 100 / Growth 300 / Agency unlimited), resetting monthly.
+        if (!\WPWand\Generation\UsageLimits::can_bulk()) {
             return new WP_REST_Response(['error' => __('Monthly bulk generation limit reached.', 'wp-wand')], 200);
         }
 
@@ -171,6 +171,12 @@ final class BulkController extends AbstractController
         $titles = array_values(array_filter(array_map(static fn ($t) => sanitize_text_field((string) $t), $titles)));
         if (empty($titles)) {
             return new WP_REST_Response(['error' => __('Select at least one title.', 'wp-wand')], 400);
+        }
+
+        // Only generate as many as the remaining monthly allowance permits.
+        $titles = array_slice($titles, 0, \WPWand\Generation\UsageLimits::bulk_remaining());
+        if (empty($titles)) {
+            return new WP_REST_Response(['error' => __('Monthly bulk generation limit reached.', 'wp-wand')], 200);
         }
 
         $word_count = absint($request->get_param('word_count'));
@@ -187,8 +193,8 @@ final class BulkController extends AbstractController
             update_option('wpwand_target_word_count', $word_count);
         }
 
-        // Per-run progress counters (same option keys the legacy page shows).
-        update_option('wpwand_pgc_total_bulk_generated', (int) get_option('wpwand_pgc_total_bulk_generated', 0) + 1);
+        // Count each generated post against the monthly bulk allowance (one per title).
+        \WPWand\Generation\UsageLimits::consume_bulk(count($titles));
         update_option('wpwand_pgc_task_completed', 0);
         update_option('wpwand_pgc_total_queue', count($titles));
 
@@ -243,9 +249,6 @@ final class BulkController extends AbstractController
         // Only not-yet-approved rows (post_id = 0) — approved ones became real posts.
         $rows = $wpdb->get_results("SELECT id, title, content, status, created_at FROM {$this->table()} WHERE post_id = 0 ORDER BY created_at DESC LIMIT 100", ARRAY_A); // phpcs:ignore
 
-        $limit = (int) get_option('wpwand_pgc_limit', 10);
-        $used  = (int) get_option('wpwand_pgc_total_bulk_generated', 0);
-
         // Background generation in progress? Matches the legacy "Generating Bulk Post…" header.
         // The active engine decides what "running" means; OR the per-row fallback either way.
         $engine  = (string) get_option('wpwand_gen_engine', 'browser');
@@ -257,8 +260,8 @@ final class BulkController extends AbstractController
 
         return new WP_REST_Response([
             'items'           => $this->shape($rows),
-            'limit_text'      => -1 === $limit ? __('Unlimited', 'wp-wand') : "{$used}/{$limit}",
-            'can_create'      => function_exists('wpwand_pgs_rate_limi') ? (bool) wpwand_pgs_rate_limi() : true,
+            'limit_text'      => \WPWand\Generation\UsageLimits::bulk_text(),
+            'can_create'      => \WPWand\Generation\UsageLimits::can_bulk(),
             'process_running' => $running,
             'engine'          => $engine,
             'queue_total'     => (int) get_option('wpwand_pgc_total_queue', 0),
