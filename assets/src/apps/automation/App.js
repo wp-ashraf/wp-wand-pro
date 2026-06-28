@@ -229,7 +229,12 @@ export default function App() {
 				</div>
 				<div className="wpwa__header-right">
 					{ usage.text && (
-						<span className="wpwa-counter">
+						<span
+							className={
+								'wpwa-counter' +
+								( capReached ? ' is-exceeded' : '' )
+							}
+						>
 							<strong>
 								{ __( 'Automation left:', 'wp-wand' ) }
 							</strong>{ ' ' }
@@ -259,7 +264,7 @@ export default function App() {
 						) }
 					</span>
 					<a
-						className="wpwa-btn wpwa-btn--primary"
+						className="wpwa-btn wpwa-btn--danger"
 						href={ usage.upgrade_url || 'https://wpwand.com/pro-plugin' }
 						target="_blank"
 						rel="noreferrer"

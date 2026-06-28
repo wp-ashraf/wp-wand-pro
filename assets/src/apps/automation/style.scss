@@ -45,13 +45,15 @@
 .wpwa-btn {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	height: 40px;
 	padding: 0 18px;
 	border-radius: 8px;
 	border: 1px solid transparent;
-	font: 600 13px/40px 'Inter', sans-serif;
+	font: 600 13px/1 'Inter', sans-serif;
 	cursor: pointer;
 	white-space: nowrap;
+	text-decoration: none; // anchors styled as buttons
 
 	&--primary {
 		background: var( --wpwa-brand );
@@ -59,6 +61,17 @@
 
 		&:hover {
 			filter: brightness( 0.95 );
+			color: #fff;
+		}
+	}
+
+	&--danger {
+		background: #d63638;
+		color: #fff;
+
+		&:hover {
+			filter: brightness( 0.95 );
+			color: #fff;
 		}
 	}
 
@@ -266,6 +279,11 @@
 
 	strong {
 		color: inherit;
+	}
+
+	&.is-exceeded {
+		color: #d63638;
+		font-weight: 600;
 	}
 }
 
