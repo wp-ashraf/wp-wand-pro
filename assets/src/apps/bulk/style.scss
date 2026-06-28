@@ -1,0 +1,490 @@
+/**
+ * Bulk Posts — recreates the legacy design (wp-wand-pro list + wizard) in React.
+ * Recreated from the legacy markup/CSS (admin.css bulk rules), NOT copied. Scoped under
+ * .wpwand-bulk with a unique wpwb- prefix.
+ */
+.wpwand-bulk {
+	--wpwb-brand: var( --wpwand-brand-color, #3767fb );
+	--wpwb-text: #18181b;
+	--wpwb-ink: #080e13;
+	--wpwb-muted: #454f5c;
+	--wpwb-border: #e4e4e7;
+	--wpwb-line: rgba( 22, 22, 23, 0.07 );
+	--wpwb-tabline: #d1d6db;
+	--wpwb-soft: #eaedf0;
+
+	font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+	color: var( --wpwb-text );
+	margin: 16px 20px 40px 0;
+
+	* { box-sizing: border-box; }
+
+	h1 {
+		font-size: 20px;
+		font-weight: 600;
+		margin: 0;
+		color: var( --wpwb-ink );
+
+		small { font-size: 10px; font-weight: 400; margin-left: 6px; color: var( --wpwb-muted ); }
+	}
+}
+
+/* ---- List header ---- */
+.wpwb-listhead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 18px;
+
+	&__right { display: flex; align-items: center; gap: 18px; }
+}
+
+.wpwb-counter {
+	font: 400 14px/40px Inter, sans-serif;
+	color: var( --wpwb-ink );
+	strong { font-weight: 600; }
+}
+
+/* "Generating Bulk Post…" header (recreates legacy .wpwand-pgdc-header.process-running) */
+.wpwb-genhead {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	background: #fcfcfc;
+	border: 1px solid var( --wpwb-soft );
+	border-radius: 10px;
+	padding: 20px 20px;
+	margin-bottom: 18px;
+
+	&__text {
+		strong { display: block; font: 600 16px/24px Inter, sans-serif; color: var( --wpwb-ink ); }
+		p { margin: 2px 0 0; font: 400 13px/18px Inter, sans-serif; color: var( --wpwb-muted ); }
+	}
+}
+
+.wpwb-spinner {
+	flex: 0 0 auto;
+	&__g {
+		transform-origin: 24px 24px;
+		animation: wpwb-spin 0.9s steps( 8 ) infinite;
+	}
+}
+@keyframes wpwb-spin {
+	to { transform: rotate( 360deg ); }
+}
+
+/* ---- Bulk action bar ---- */
+.wpwb-bulkbar {
+	display: flex;
+	gap: 8px;
+	padding: 8px 0;
+
+	select {
+		min-width: 148px;
+		padding: 8px 16px;
+		border: 1px solid var( --wpwb-soft );
+		border-radius: 5px;
+		background: #fff;
+		color: var( --wpwb-muted );
+		font: 400 14px/20px Inter, sans-serif;
+		cursor: pointer;
+
+		&:hover, &:focus { border-color: var( --wpwb-brand ); outline: none; }
+	}
+}
+
+/* ---- Table (recreates wp-list-table look) ---- */
+.wpwb-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: #fff;
+	border: 1px solid var( --wpwb-line );
+	border-radius: 10px;
+	overflow: hidden;
+
+	th {
+		text-align: left;
+		padding: 20px;
+		font: 500 14px/20px Inter, sans-serif;
+		color: var( --wpwb-ink );
+		border-bottom: 1px solid var( --wpwb-line );
+		background: #fff;
+	}
+	td {
+		padding: 15px 20px;
+		font: 400 14px/20px Inter, sans-serif;
+		color: var( --wpwb-text );
+		border-bottom: 1px solid var( --wpwb-line );
+		vertical-align: middle;
+	}
+	tr:last-child td { border-bottom: 0; }
+
+	.wpwb-cb { width: 40px; }
+	.wpwb-content { color: var( --wpwb-muted ); max-width: 380px; }
+	.wpwb-date { white-space: nowrap; }
+	.wpwb-rowactions { text-align: right; white-space: nowrap; }
+}
+
+.wpwb-cb input[type='checkbox'] {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 16px;
+	height: 16px;
+	border: 1.5px solid var( --wpwb-soft );
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+	vertical-align: middle;
+	position: relative;
+
+	&:checked {
+		background: var( --wpwb-brand );
+		border-color: var( --wpwb-brand );
+	}
+	&:checked::after {
+		content: '';
+		position: absolute;
+		left: 4px;
+		top: 1px;
+		width: 5px;
+		height: 9px;
+		border: solid #fff;
+		border-width: 0 2px 2px 0;
+		transform: rotate( 45deg );
+	}
+}
+
+.wpwb-linktext {
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	color: var( --wpwb-brand );
+	font: 400 14px/20px Inter, sans-serif;
+	text-align: left;
+	&:hover { text-decoration: underline; }
+}
+
+.wpwb-empty { text-align: center; color: var( --wpwb-muted ); padding: 30px; }
+
+/* Status badges (squared, legacy colors) */
+.wpwb-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 8px;
+	border-radius: 4px;
+	font: 500 12px/20px Inter, sans-serif;
+	color: var( --wpwb-text );
+	background: #fef392;
+
+	&--done, &--publish, &--published { background: #c9f5b4; }
+	&--pending, &--workings { background: #fef392; }
+	&--failed { background: #ffb2b2; }
+}
+
+/* Row action buttons: View (dark), Approve (brand), Remove (red) */
+.wpwb-hbtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 5px 12px;
+	border: 0;
+	border-radius: 4px;
+	margin-left: 10px;
+	color: #fff;
+	font: 500 14px/21px Inter, sans-serif;
+	cursor: pointer;
+	text-decoration: none;
+	background: var( --wpwb-muted );
+
+	&--approve { background: var( --wpwb-brand ); }
+	&--delete { background: #ee2626; }
+	&:disabled { opacity: 0.6; cursor: default; }
+	&:hover { filter: brightness( 0.96 ); }
+}
+
+/* Pagination */
+.wpwb-pager {
+	display: inline-flex;
+	border: 1px solid var( --wpwb-border );
+	border-radius: 4px;
+	overflow: hidden;
+	margin-top: 20px;
+
+	button, span {
+		background: #fff;
+		border: 0;
+		border-right: 1px solid var( --wpwb-border );
+		padding: 8px 13px;
+		font-size: 13px;
+		color: #333;
+		cursor: pointer;
+
+		&:last-child { border-right: 0; }
+		&:disabled { opacity: 0.5; cursor: default; }
+	}
+	span { color: var( --wpwb-muted ); cursor: default; }
+}
+
+/* ================= Create wizard ================= */
+.wpwb-createhead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0;
+}
+
+.wpwb-pgs {
+	background: #fff;
+	border: 1px solid var( --wpwb-line );
+	border-radius: 10px;
+	margin-top: 30px;
+	overflow: hidden;
+}
+
+/* Steps header */
+.wpwb-steps {
+	display: flex;
+	gap: 60px;
+	padding: 25px 35px;
+	border-bottom: 1px solid var( --wpwb-soft );
+}
+.wpwb-step {
+	opacity: 0.5;
+	&.is-active { opacity: 1; }
+
+	strong {
+		display: block;
+		font: 600 14px/20px Inter, sans-serif;
+		color: var( --wpwb-ink );
+		margin-bottom: 5px;
+	}
+	span {
+		display: block;
+		font: 400 12px/18px Inter, sans-serif;
+		color: var( --wpwb-muted );
+	}
+}
+
+.wpwb-stepbody { padding: 30px 35px; }
+
+/* Segmented tabs */
+.wpwb-ntabs {
+	display: inline-flex;
+	border: 1px solid var( --wpwb-tabline );
+	border-radius: 8px;
+	overflow: hidden;
+	margin-bottom: 30px;
+
+	button {
+		background: #fff;
+		border: 0;
+		padding: 16px;
+		font: 500 14px/21px Inter, sans-serif;
+		color: var( --wpwb-ink );
+		cursor: pointer;
+
+		& + button { border-left: 1px solid var( --wpwb-tabline ); }
+		&.is-active { background: var( --wpwb-soft ); }
+	}
+}
+
+/* Two-column field row (label 40% / field 60%) */
+.wpwb-pgf-row {
+	display: flex;
+	gap: 10%;
+	max-width: 770px;
+	margin-bottom: 32px;
+
+	.wpwb-pgf-label {
+		width: 40%;
+		label { display: block; font: 600 14px/20px Inter, sans-serif; color: var( --wpwb-ink ); margin-bottom: 8px; }
+		p { margin: 0; font: 400 12px/18px Inter, sans-serif; color: var( --wpwb-muted ); }
+	}
+	.wpwb-pgf-field {
+		width: 60%;
+
+		input, select, textarea {
+			width: 100%;
+			border: 1px solid var( --wpwb-border );
+			border-radius: 5px;
+			padding: 0 17px;
+			height: 45px;
+			font: 400 14px Inter, sans-serif;
+			color: var( --wpwb-text );
+
+			&:focus { outline: none; border-color: var( --wpwb-brand ); }
+		}
+		textarea { height: auto; min-height: 150px; padding: 12px 17px; line-height: 1.5; resize: vertical; }
+	}
+}
+
+/* Primary / back buttons */
+.wpwb-pbtn {
+	background: var( --wpwb-brand );
+	border: 0;
+	border-radius: 8px;
+	height: 40px;
+	min-width: 100px;
+	padding: 0 20px;
+	color: #fff;
+	font: 400 14px/21px Inter, sans-serif;
+	cursor: pointer;
+
+	&:disabled { opacity: 0.6; cursor: default; }
+	&:hover:not( :disabled ) { filter: brightness( 0.96 ); }
+}
+.wpwb-back {
+	height: 40px;
+	min-width: 100px;
+	padding: 0 20px;
+	margin-right: 8px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #7c838a;
+	border-radius: 8px;
+	background: #fff;
+	color: var( --wpwb-ink );
+	font: 500 14px/21px Inter, sans-serif;
+	cursor: pointer;
+}
+.wpwb-formrow { margin-top: 4px; display: flex; }
+
+/* Step 2: info + titles box + settings */
+.wpwb-info {
+	display: flex;
+	gap: 60px;
+	margin-bottom: 20px;
+	font-size: 14px;
+
+	strong { color: var( --wpwb-ink ); font-weight: 600; margin-right: 8px; }
+	span { color: var( --wpwb-muted ); }
+}
+
+.wpwb-step2 {
+	display: flex;
+	gap: 30px;
+	align-items: flex-start;
+	margin-bottom: 24px;
+}
+.wpwb-titlesbox {
+	flex: 0 0 58%;
+	border: 1px solid #ebebeb;
+	background: #fbfbfb;
+	border-radius: 10px;
+	padding: 20px;
+
+	h4 { margin: 0 0 12px; font: 600 16px/24px Inter, sans-serif; color: var( --wpwb-ink ); }
+}
+.wpwb-titles {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	max-height: 320px;
+	overflow: auto;
+
+	li { padding: 7px 0; }
+	label { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+}
+.wpwb-settings {
+	flex: 1;
+
+	.wpwb-fld { margin-bottom: 16px;
+		label { display: block; font: 600 14px/20px Inter, sans-serif; color: var( --wpwb-ink ); margin-bottom: 8px; }
+		input, select, textarea {
+			width: 100%; border: 1px solid var( --wpwb-border ); border-radius: 5px; padding: 0 14px; height: 45px;
+			font: 400 14px Inter, sans-serif; color: var( --wpwb-text );
+			&:focus { outline: none; border-color: var( --wpwb-brand ); }
+		}
+		textarea { height: auto; min-height: 70px; padding: 10px 14px; }
+	}
+	.wpwb-check { display: flex; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 10px; cursor: pointer; }
+	.wpwb-opt { color: var( --wpwb-muted ); font-weight: 400; }
+}
+
+.wpwb-confirm-text {
+	font: 500 16px/24px Inter, sans-serif;
+	color: #000;
+	margin: 0 0 20px;
+}
+
+/* Notices + modal + markdown (kept) */
+.wpwb-notice {
+	background: #fcf0f1;
+	border: 1px solid #f0b8bd;
+	color: #b32d2e;
+	padding: 12px 14px;
+	border-radius: 8px;
+	margin-bottom: 14px;
+	font-size: 13px;
+}
+
+.wpwb-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba( 0, 0, 0, 0.45 );
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 60px 20px;
+	z-index: 100000;
+	overflow: auto;
+
+	&__box { background: #fff; border-radius: 12px; max-width: 760px; width: 100%; padding: 28px 32px; position: relative;
+		h3 { margin: 0 0 14px; font-size: 18px; } }
+	&__close { position: absolute; top: 12px; right: 16px; background: none; border: 0; font-size: 24px; line-height: 1; cursor: pointer; color: var( --wpwb-muted ); }
+}
+
+.wpwb-viewgen {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 16px;
+	padding: 10px 14px;
+	background: #fcfcfc;
+	border: 1px solid var( --wpwb-soft );
+	border-radius: 8px;
+	font: 500 13px/1.4 Inter, sans-serif;
+	color: var( --wpwb-muted );
+
+	.wpwb-spinner { width: 24px; height: 24px; }
+}
+
+// Plain text revealed smoothly while a post generates (no markdown-reflow flashing).
+.wpwb-stream-text {
+	white-space: pre-wrap;
+	word-break: break-word;
+	font: 400 14px/1.7 Inter, sans-serif;
+	color: var( --wpwb-text );
+}
+.wpwb-stream-caret {
+	display: inline-block;
+	width: 7px;
+	height: 15px;
+	margin-left: 1px;
+	vertical-align: text-bottom;
+	background: var( --wpwb-brand );
+	animation: wpwb-blink 1s steps( 2 ) infinite;
+}
+@keyframes wpwb-blink {
+	to { opacity: 0; }
+}
+
+.wpwb-md {
+	font-size: 14px;
+	line-height: 1.7;
+	color: #333;
+
+	h1, h2, h3, h4 { margin: 1.6em 0 0.8em; font-weight: 600; line-height: 1.4; }
+	p { margin: 0 0 1.1em; }
+	ul, ol { margin: 1em 0 1em 1.4em; padding-left: 1em; }
+	li { margin-bottom: 0.5em; }
+	blockquote { border-left: 4px solid var( --wpwb-brand ); padding: 0.6em 1.1em; margin: 1.2em 0; background: #f9f9f9; color: #555; font-style: italic; }
+	table { width: 100%; border-collapse: collapse; margin: 1.2em 0; }
+	th, td { border: 1px solid #ddd; padding: 0.7em; text-align: left; }
+	th { background: #f3f3f3; font-weight: 600; }
+	> :first-child { margin-top: 0; }
+	> :last-child { margin-bottom: 0; }
+}

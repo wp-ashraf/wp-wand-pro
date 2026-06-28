@@ -6,3 +6,13 @@
 # htaccess
 /.htaccess
 /GEMINI.md
+# Dependencies & build artifacts (React + REST rebuild)
+/node_modules
+/build/
+
+# Local browser tooling
+/tools/
+*.png
+
+# macOS
+.DS_Store

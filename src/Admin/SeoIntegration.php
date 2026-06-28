@@ -34,13 +34,13 @@ final class SeoIntegration
             return;
         }
 
-        $asset_file = WPWAND_NEW_DIR . 'build/seo.asset.php';
+        $asset_file = WPWANDPRO_NEW_DIR . 'build/seo.asset.php';
         if (!is_readable($asset_file)) {
             return;
         }
         $asset = require $asset_file;
 
-        wp_enqueue_script(self::HANDLE, WPWAND_NEW_URL . 'build/seo.js', $asset['dependencies'], $asset['version'], true);
+        wp_enqueue_script(self::HANDLE, WPWANDPRO_NEW_URL . 'build/seo.js', $asset['dependencies'], $asset['version'], true);
         wp_localize_script(self::HANDLE, 'wpwandSeo', [
             'root'  => esc_url_raw(rest_url()),
             'nonce' => wp_create_nonce('wp_rest'),

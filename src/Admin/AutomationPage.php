@@ -44,16 +44,16 @@ final class AutomationPage
             return;
         }
 
-        $asset_file = WPWAND_NEW_DIR . 'build/automation.asset.php';
+        $asset_file = WPWANDPRO_NEW_DIR . 'build/automation.asset.php';
         if (!is_readable($asset_file)) {
             return;
         }
         $asset = require $asset_file;
 
-        wp_enqueue_script(self::HANDLE, WPWAND_NEW_URL . 'build/automation.js', $asset['dependencies'], $asset['version'], true);
+        wp_enqueue_script(self::HANDLE, WPWANDPRO_NEW_URL . 'build/automation.js', $asset['dependencies'], $asset['version'], true);
         wp_enqueue_style('wpwand-inter-font', 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap', [], $asset['version']);
-        if (is_readable(WPWAND_NEW_DIR . 'build/style-automation.css')) {
-            wp_enqueue_style(self::HANDLE, WPWAND_NEW_URL . 'build/style-automation.css', [], (string) filemtime(WPWAND_NEW_DIR . 'build/style-automation.css'));
+        if (is_readable(WPWANDPRO_NEW_DIR . 'build/style-automation.css')) {
+            wp_enqueue_style(self::HANDLE, WPWANDPRO_NEW_URL . 'build/style-automation.css', [], (string) filemtime(WPWANDPRO_NEW_DIR . 'build/style-automation.css'));
         }
         wp_localize_script(self::HANDLE, 'wpwandApi', [
             'root'  => esc_url_raw(rest_url()),
