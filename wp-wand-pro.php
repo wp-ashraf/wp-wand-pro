@@ -29,7 +29,6 @@ require_once __DIR__ . '/bootstrap.php';
 
 
 require __DIR__ . '/vendor/action-scheduler/action-scheduler.php';
-// require __DIR__ . '/vendor/action-scheduler/action-scheduler-high-volume.php';
 
 add_action('plugins_loaded', 'wpwand_pro_load_plugin', 20);
 
@@ -42,8 +41,6 @@ function wpwand_pro_load_plugin()
 {
 
 
-
-    $updatechecker = null;
 
     define('WPWAND_PRO_VERSION', get_plugin_data(__FILE__)['Version']);
 
@@ -75,17 +72,12 @@ function wpwand_pro_load_plugin()
     }
 
 
-    // if (!class_exists('WP_Background_Process')) {
-    //     require __DIR__ . '/vendor/wp-background-processing/wp-background-processing.php';
-    // }
-
     if (!class_exists('Parsedown')) {
         require __DIR__ . '/vendor/parsedown/parsdown.php';
     }
 
-    // Include required files
+    // Legacy procedural side: license functions always; the Pro feature includes only when licensed.
     require_once WPWAND_PRO_PLUGIN_DIR . 'inc/tala.php';
-    // var_dump(wpwand_pro_tala_check());
     if (wpwand_pro_tala_check()) {
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/data.php';
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/helper-functions.php';
@@ -97,13 +89,8 @@ function wpwand_pro_load_plugin()
         require_once WPWAND_PRO_PLUGIN_DIR . 'inc/post-generator.php';
     }
 
-    // Plugin updates are now handled by the new-architecture WPWand\License\UpdateChecker
-    // (wired from LicenseModule). The legacy WPWandUdChecker is left defined in inc/tala.php for
-    // reference but is intentionally NOT instantiated here — running both would double-register the
-    // site_transient_update_plugins / plugins_api filters and fight over the wpwand_pro_update cache.
-    // if ($updatechecker === null) {
-    //     $updatechecker = new WPWandUdChecker();
-    // }
+    // Updates are handled by WPWand\License\UpdateChecker (wired from LicenseModule); the legacy
+    // WPWandUdChecker in inc/tala.php is intentionally NOT instantiated (would double-register).
 }
 
 
