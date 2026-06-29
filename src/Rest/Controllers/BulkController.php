@@ -75,10 +75,10 @@ final class BulkController extends AbstractController
             return new WP_REST_Response(['error' => __('Nothing to retry for this post.', 'wp-wand')], 200);
         }
 
-        // Re-arm the WP-Cron drainer for the cron engines; the browser engine picks it up on the
-        // next heartbeat (the list now reports a pending job, so generation resumes).
-        $engine = (string) get_option('wpwand_gen_engine', 'browser');
-        if (($engine === 'wp_cron' || $engine === 'system_cron') && !wp_next_scheduled('wpwand_gen_cron_tick')) {
+        // Always arm the new-engine WP-Cron drainer so the re-queued job processes even when the
+        // browser heartbeat isn't running (Action-Scheduler-configured site, or the page is closed).
+        // On the default 'browser' engine the heartbeat also picks it up immediately.
+        if (!wp_next_scheduled('wpwand_gen_cron_tick')) {
             wp_schedule_event(time() + 30, 'wpwand_minutely', 'wpwand_gen_cron_tick');
         }
 
