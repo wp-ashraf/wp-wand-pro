@@ -76,8 +76,9 @@ class LicenseService
         if ($key !== '') {
             $this->tala->deactivate($key);
         }
-        if (function_exists('wpwand_get_data')) {
-            wpwand_get_data(true); // let the free side rebuild its (now free-only) template cache
+        // Rebuild the (now free-only) template cache from the built-in catalog.
+        if (class_exists('WPWand\\Data\\Templates')) {
+            \WPWand\Data\Templates::seed(true);
         }
 
         delete_option(self::OPT_KEY);

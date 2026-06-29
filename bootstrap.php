@@ -49,6 +49,11 @@ add_action('plugins_loaded', static function () {
     if (class_exists('WPWand\\Generation\\EngineHooks')) {
         (new \WPWand\Generation\EngineHooks())->register();
     }
+    // Pro data/unlock filters (editor prompts + AI characters). Always registered; the callbacks
+    // gate on the live license, so unlock follows activation exactly like the legacy data.php.
+    if (class_exists('WPWand\\Data\\ProData')) {
+        \WPWand\Data\ProData::register();
+    }
 }, 21);
 
 /*
