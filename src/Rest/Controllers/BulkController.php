@@ -149,6 +149,20 @@ final class BulkController extends AbstractController
         return $wpdb->prefix . 'wpwand_generated_post';
     }
 
+    /** Legacy Action-Scheduler engine: any bulk-post action still pending/in-progress? */
+    private function as_process_running(): bool
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . 'actionscheduler_actions';
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) !== $table) {
+            return false; // Action Scheduler not installed
+        }
+        $n = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB
+            "SELECT COUNT(*) FROM `{$table}` WHERE hook = 'wpwand_bulk_post_schedule' AND status IN ('in-progress','pending')"
+        );
+        return $n > 0;
+    }
+
     public function titles(WP_REST_Request $request): WP_REST_Response
     {
         if (!class_exists('WPWand\Generation\Generator')) {
@@ -161,7 +175,7 @@ final class BulkController extends AbstractController
             return new WP_REST_Response(['error' => __('Please enter a topic.', 'wp-wand')], 400);
         }
 
-        $language = function_exists('wpwand_get_option') ? wpwand_get_option('wpwand_language', 'English') : 'English';
+        $language = get_option('wpwand_language') ?: 'English';
         $content  = \WPWand\Generation\Generator::generate(
             "I will give a topic and you will write only one high converting blog title. This title should have a hook and high potential to go viral on social media. My topic is {$topic}. You must write in {$language}.",
             $count
@@ -281,8 +295,8 @@ final class BulkController extends AbstractController
         // The active engine decides what "running" means; OR the per-row fallback either way.
         $engine  = (string) get_option('wpwand_gen_engine', 'browser');
         $running = (new JobRunner())->is_running();
-        if ($engine === 'action_scheduler' && function_exists('wpwand_as_process_running')) {
-            $running = $running || (bool) wpwand_as_process_running();
+        if ($engine === 'action_scheduler') {
+            $running = $running || $this->as_process_running();
         }
         $running = $running || (bool) array_filter($rows ?: [], static fn ($r) => 'done' !== $r['status'] && 'failed' !== $r['status']);
 
