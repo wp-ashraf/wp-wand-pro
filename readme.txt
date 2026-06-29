@@ -1,9 +1,9 @@
 === WP Wand - AI Content Generator ===
-Contributors: Your Name
+Contributors: wpgrids, ashrafuddin765
 Tags: ai, content generation
 Requires at least: 5.0
-Tested up to: 6.2
-Stable tag: 1.3.04
+Tested up to: 6.8
+Stable tag: 2.0.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -50,10 +50,19 @@ Yes, you can customize your content by adjusting the tone, length, and level of 
 
 == Changelog ==
 
+= 2.0.0 =
+* New: Rebuilt on the React + REST architecture alongside WP Wand 2.0.0.
+* New: Scheduled post Automation, improved Bulk Posts (with retry), Custom Prompts, SEO and
+  WooCommerce generation, History and white-label — all as modern React screens.
+* New: License activation, plugin updates and tier limits handled in the new architecture.
+* Changed: The entire legacy codebase was removed; your license and data migrate automatically
+  with no re-activation required. Requires WP Wand (free) 2.0.0+.
+
 = 1.0.0 =
 * Initial release
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release of WP Wand - AI Content Generator plugin.
+= 2.0.0 =
+Major rebuild. Update WP Wand (free) to 2.0.0+ as well; your license and data carry over
+automatically.

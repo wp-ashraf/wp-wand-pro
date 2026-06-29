@@ -1,6 +1,6 @@
 {
     "name": "wp-wand-pro",
-    "version": "1.3.05",
+    "version": "2.0.0",
     "description": "WP Wand Pro — Pro feature React apps (React + REST rebuild).",
     "license": "GPL-2.0-or-later",
     "private": true,
