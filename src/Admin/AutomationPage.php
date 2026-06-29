@@ -25,8 +25,8 @@ final class AutomationPage
 
         add_submenu_page(
             self::PARENT_SLUG,
-            __('Automation (New)', 'wp-wand'),
-            __('Automation (New)', 'wp-wand'),
+            __('Automation', 'wp-wand'),
+            __('Automation', 'wp-wand'),
             'edit_posts',
             self::PAGE_SLUG,
             [$this, 'render']

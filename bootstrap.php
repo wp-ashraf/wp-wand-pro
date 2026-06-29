@@ -69,6 +69,18 @@ add_filter('wpwand_disabled_modules', static function ($disabled) {
 });
 
 /*
+ * Cutover cleanup: the React screens (Bulk / License / Automation / History) are now primary, so
+ * strip the legacy Pro submenu entries from the WP Wand menu. Runs late (priority 999) so it fires
+ * after the legacy classes register their menus (priorities 11/20/30). The legacy pages stay defined
+ * (reachable by direct URL) — only their menu items are removed, leaving a single clean menu.
+ */
+add_action('admin_menu', static function () {
+    remove_submenu_page('wpwand', 'wpwand-history');         // legacy Pro History
+    remove_submenu_page('wpwand', 'wpwand-post-generator');  // legacy Pro Bulk Posts
+    remove_submenu_page('wpwand', 'wpwand-pro-activation');  // legacy Activation
+}, 999);
+
+/*
  * Register Pro feature modules into the shared registry. Fired by the free plugin
  * (\WPWand\Core\Plugin::boot_modules) after all plugins are loaded.
  */

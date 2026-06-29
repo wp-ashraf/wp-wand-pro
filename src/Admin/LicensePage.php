@@ -25,8 +25,8 @@ final class LicensePage
 
         add_submenu_page(
             self::PARENT_SLUG,
-            __('License (New)', 'wp-wand'),
-            __('License (New)', 'wp-wand'),
+            __('License', 'wp-wand'),
+            __('License', 'wp-wand'),
             'manage_options',
             self::PAGE_SLUG,
             [$this, 'render']

@@ -25,8 +25,8 @@ final class BulkPage
 
         add_submenu_page(
             self::PARENT_SLUG,
-            __('Bulk Posts (New)', 'wp-wand'),
-            __('Bulk Posts (New)', 'wp-wand'),
+            __('Bulk Posts', 'wp-wand'),
+            __('Bulk Posts', 'wp-wand'),
             'edit_posts',
             self::PAGE_SLUG,
             [$this, 'render']
