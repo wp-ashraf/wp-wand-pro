@@ -336,10 +336,10 @@ final class JobRunner
     /** One short AI call → plain text. Throws on failure so tick() can retry/fail the job. */
     private function ai_text(string $prompt, array $settings, int $max_tokens): string
     {
-        if (!function_exists('wpwand_generate_ai_content')) {
+        if (!class_exists('WPWand\Generation\Generator')) {
             self::load_generator();
         }
-        if (!function_exists('wpwand_generate_ai_content')) {
+        if (!class_exists('WPWand\Generation\Generator')) {
             throw new \RuntimeException('Generator unavailable.');
         }
 
@@ -348,7 +348,7 @@ final class JobRunner
             $args['language'] = (string) $settings['language'];
         }
 
-        $res = wpwand_generate_ai_content($prompt, 1, $args);
+        $res = \WPWand\Generation\Generator::generate($prompt, 1, $args);
 
         if (is_object($res) && isset($res->error)) {
             $msg = \WPWand\Generation\ErrorFormatter::humanize($res->error, __('Generation failed.', 'wp-wand'));

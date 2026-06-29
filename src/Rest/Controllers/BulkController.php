@@ -151,7 +151,7 @@ final class BulkController extends AbstractController
 
     public function titles(WP_REST_Request $request): WP_REST_Response
     {
-        if (!function_exists('wpwand_generate_ai_content')) {
+        if (!class_exists('WPWand\Generation\Generator')) {
             return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand')], 503);
         }
 
@@ -162,7 +162,7 @@ final class BulkController extends AbstractController
         }
 
         $language = function_exists('wpwand_get_option') ? wpwand_get_option('wpwand_language', 'English') : 'English';
-        $content  = wpwand_generate_ai_content(
+        $content  = \WPWand\Generation\Generator::generate(
             "I will give a topic and you will write only one high converting blog title. This title should have a hook and high potential to go viral on social media. My topic is {$topic}. You must write in {$language}.",
             $count
         );

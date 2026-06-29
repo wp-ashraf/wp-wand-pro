@@ -208,7 +208,7 @@ final class AutomationRunner
      */
     private function ai_titles(string $subject, int $count, array $schedule): array
     {
-        if ($subject === '' || !function_exists('wpwand_generate_ai_content')) {
+        if ($subject === '' || !class_exists('WPWand\Generation\Generator')) {
             return [];
         }
 
@@ -217,7 +217,7 @@ final class AutomationRunner
             . 'Return ONLY a numbered list of the titles — no intro, no descriptions, no quotation marks.'
             . ($tone !== '' ? " Tone: {$tone}." : '');
 
-        $res = wpwand_generate_ai_content($prompt, 1, ['max_tokens' => 400]);
+        $res = \WPWand\Generation\Generator::generate($prompt, 1, ['max_tokens' => 400]);
         if (is_object($res) && isset($res->error)) {
             // Bubble up the real provider message (e.g. model rate-limited/down) for the UI.
             $this->lastError = ErrorFormatter::humanize($res->error, __('Could not generate titles.', 'wp-wand'));

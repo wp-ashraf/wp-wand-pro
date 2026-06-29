@@ -25,7 +25,7 @@ final class WooCommerceController extends AbstractController
 
     public function generate(WP_REST_Request $request): WP_REST_Response
     {
-        if (!function_exists('wpwand_generate_ai_content')) {
+        if (!class_exists('WPWand\Generation\Generator')) {
             return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand')], 503);
         }
 
@@ -34,11 +34,11 @@ final class WooCommerceController extends AbstractController
             return new WP_REST_Response(['error' => __('Describe the product first.', 'wp-wand')], 400);
         }
 
-        $title = $this->text(wpwand_generate_ai_content(
+        $title = $this->text(\WPWand\Generation\Generator::generate(
             "Write one short, catchy, SEO-friendly WooCommerce product title (max 12 words, no quotation marks, sentence case) for this product brief. Output only the title. MY BRIEF: {$brief}."
         ));
 
-        $description = $this->text(wpwand_generate_ai_content(
+        $description = $this->text(\WPWand\Generation\Generator::generate(
             "You are a sales-page copywriting expert. Write a product description for this brief in a joyful, conversational tone. Rules: do not add a headline; start with a hook intro paragraph so readers feel connected; then a list of features each presented as a benefit of buying. Output the description only. MY BRIEF: {$brief}."
         ));
 

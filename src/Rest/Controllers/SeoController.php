@@ -27,7 +27,7 @@ final class SeoController extends AbstractController
 
     public function generate(WP_REST_Request $request): WP_REST_Response
     {
-        if (!function_exists('wpwand_generate_ai_content')) {
+        if (!class_exists('WPWand\Generation\Generator')) {
             return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand')], 503);
         }
 
@@ -39,7 +39,7 @@ final class SeoController extends AbstractController
             return new WP_REST_Response(['error' => __('Add a title first.', 'wp-wand')], 400);
         }
 
-        $content = wpwand_generate_ai_content(
+        $content = \WPWand\Generation\Generator::generate(
             "Write an SEO meta description based on the given title and description. The title is: {$title}. The description is: {$excerpt}. Write a concise and engaging meta description within 150 characters. Output only the description text."
         );
 
