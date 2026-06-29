@@ -25,8 +25,8 @@ final class BulkPage
 
         add_submenu_page(
             self::PARENT_SLUG,
-            __('Bulk Posts', 'wp-wand'),
-            __('Bulk Posts', 'wp-wand'),
+            __('Bulk Posts', 'wp-wand-pro'),
+            __('Bulk Posts', 'wp-wand-pro'),
             'edit_posts',
             self::PAGE_SLUG,
             [$this, 'render'],
@@ -58,7 +58,7 @@ final class BulkPage
         }
         wp_localize_script(self::HANDLE, 'wpwandApi', ['root' => esc_url_raw(rest_url()), 'nonce' => wp_create_nonce('wp_rest'), 'brand' => \WPWand\Data\Brand::resolve()['color']]);
         if (function_exists('wp_set_script_translations')) {
-            wp_set_script_translations(self::HANDLE, 'wp-wand');
+            wp_set_script_translations(self::HANDLE, 'wp-wand-pro');
         }
     }
 }

@@ -371,8 +371,8 @@ final class JobRunner
         $res = \WPWand\Generation\Generator::generate($prompt, 1, $args);
 
         if (is_object($res) && isset($res->error)) {
-            $msg = \WPWand\Generation\ErrorFormatter::humanize($res->error, __('Generation failed.', 'wp-wand'));
-            throw new \RuntimeException($msg);
+            $msg = \WPWand\Generation\ErrorFormatter::humanize($res->error, __('Generation failed.', 'wp-wand-pro'));
+            throw new \RuntimeException($msg); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- caught internally
         }
 
         $text = '';
@@ -500,7 +500,7 @@ final class JobRunner
     {
         $attempts = (int) $job['attempts'] + 1;
         if ($attempts >= self::MAX_ATTEMPTS) {
-            $human = \WPWand\Generation\ErrorFormatter::humanize($error, __('Generation failed.', 'wp-wand'));
+            $human = \WPWand\Generation\ErrorFormatter::humanize($error, __('Generation failed.', 'wp-wand-pro'));
             $this->update_job($job['id'], ['status' => 'failed', 'attempts' => $attempts, 'error' => $human]);
             // Store the failure reason in the post row's content so the Bulk list popup can show
             // *why* it failed (the row keeps its own title column, so content is free to reuse).

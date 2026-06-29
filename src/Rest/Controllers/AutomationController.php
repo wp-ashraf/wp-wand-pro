@@ -97,10 +97,10 @@ final class AutomationController extends AbstractController
 
         $mode = ($params['mode'] ?? 'list') === 'prompt' ? 'prompt' : 'list';
         if ($mode === 'list' && empty(array_filter((array) ($params['topics'] ?? [])))) {
-            return new WP_REST_Response(['error' => __('Add at least one topic.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Add at least one topic.', 'wp-wand-pro')], 400);
         }
         if ($mode === 'prompt' && trim((string) ($params['subject'] ?? '')) === '') {
-            return new WP_REST_Response(['error' => __('Enter a subject for the AI to write about.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Enter a subject for the AI to write about.', 'wp-wand-pro')], 400);
         }
 
         $record = Schedules::save($params);
@@ -117,7 +117,7 @@ final class AutomationController extends AbstractController
     {
         $schedule = Schedules::get((string) $request->get_param('id'));
         if (!$schedule) {
-            return new WP_REST_Response(['error' => __('Schedule not found.', 'wp-wand')], 404);
+            return new WP_REST_Response(['error' => __('Schedule not found.', 'wp-wand-pro')], 404);
         }
 
         $runner = new AutomationRunner();
@@ -143,7 +143,7 @@ final class AutomationController extends AbstractController
         $id       = (string) $request->get_param('id');
         $schedule = Schedules::get($id);
         if (!$schedule) {
-            return new WP_REST_Response(['error' => __('Schedule not found.', 'wp-wand')], 404);
+            return new WP_REST_Response(['error' => __('Schedule not found.', 'wp-wand-pro')], 404);
         }
 
         $enabled = empty($schedule['enabled']);
@@ -172,12 +172,12 @@ final class AutomationController extends AbstractController
     {
         $post_id = absint($request->get_param('id'));
         if (!$post_id || get_post_meta($post_id, '_wpwand_schedule_id', true) === '') {
-            return new WP_REST_Response(['error' => __('Not a scheduled post.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Not a scheduled post.', 'wp-wand-pro')], 400);
         }
 
         $trashed = wp_trash_post($post_id);
         if (!$trashed) {
-            return new WP_REST_Response(['error' => __('Could not delete the post.', 'wp-wand')], 200);
+            return new WP_REST_Response(['error' => __('Could not delete the post.', 'wp-wand-pro')], 200);
         }
 
         return new WP_REST_Response(['deleted' => true, 'id' => $post_id], 200);
@@ -189,7 +189,7 @@ final class AutomationController extends AbstractController
         global $wpdb;
         $row_id = absint($request->get_param('id'));
         if (!$row_id) {
-            return new WP_REST_Response(['error' => __('Invalid row.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Invalid row.', 'wp-wand-pro')], 400);
         }
         $jt = $wpdb->prefix . 'wpwand_gen_jobs';
         $pt = $wpdb->prefix . 'wpwand_generated_post';
@@ -209,7 +209,7 @@ final class AutomationController extends AbstractController
     {
         $post_id = absint($request->get_param('id'));
         if (!$post_id || get_post_meta($post_id, '_wpwand_schedule_id', true) === '') {
-            return new WP_REST_Response(['error' => __('Not a scheduled post.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Not a scheduled post.', 'wp-wand-pro')], 400);
         }
 
         $res = wp_update_post(['ID' => $post_id, 'post_status' => 'publish'], true);
@@ -274,7 +274,7 @@ final class AutomationController extends AbstractController
             $out[] = [
                 'id'     => (int) $r['id'],
                 'title'  => (string) ($r['title'] ?? ''),
-                'reason' => $reason !== '' ? $reason : __('Generation failed.', 'wp-wand'),
+                'reason' => $reason !== '' ? $reason : __('Generation failed.', 'wp-wand-pro'),
             ];
         }
         return $out;
@@ -302,7 +302,7 @@ final class AutomationController extends AbstractController
         foreach ($query->posts as $post) {
             $out[] = [
                 'id'       => $post->ID,
-                'title'    => get_the_title($post) ?: __( '(no title)', 'wp-wand' ),
+                'title'    => get_the_title($post) ?: __( '(no title)', 'wp-wand-pro' ),
                 'status'   => $post->post_status,
                 'date'     => get_the_date('M j, Y', $post),
                 'edit_url' => get_edit_post_link($post->ID, 'raw'),

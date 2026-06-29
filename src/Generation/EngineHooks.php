@@ -32,7 +32,7 @@ final class EngineHooks
         if (!isset($schedules['wpwand_minutely'])) {
             $schedules['wpwand_minutely'] = [
                 'interval' => 60,
-                'display'  => __('Every minute (WP Wand)', 'wp-wand'),
+                'display'  => __('Every minute (WP Wand)', 'wp-wand-pro'),
             ];
         }
         return $schedules;

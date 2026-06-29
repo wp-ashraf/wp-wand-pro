@@ -28,7 +28,7 @@ final class SeoController extends AbstractController
     public function generate(WP_REST_Request $request): WP_REST_Response
     {
         if (!class_exists('WPWand\Generation\Generator')) {
-            return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand')], 503);
+            return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand-pro')], 503);
         }
 
         $title   = sanitize_text_field((string) $request->get_param('title'));
@@ -36,7 +36,7 @@ final class SeoController extends AbstractController
         $excerpt = $post_id ? get_the_excerpt($post_id) : '';
 
         if ($title === '' && $excerpt === '') {
-            return new WP_REST_Response(['error' => __('Add a title first.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Add a title first.', 'wp-wand-pro')], 400);
         }
 
         $content = \WPWand\Generation\Generator::generate(
@@ -44,7 +44,7 @@ final class SeoController extends AbstractController
         );
 
         if (is_object($content) && isset($content->error)) {
-            $msg = isset($content->error->message) ? (string) $content->error->message : __('Failed.', 'wp-wand');
+            $msg = isset($content->error->message) ? (string) $content->error->message : __('Failed.', 'wp-wand-pro');
             return new WP_REST_Response(['error' => $msg], 200);
         }
 
@@ -56,7 +56,7 @@ final class SeoController extends AbstractController
         $text = trim(trim((string) $text), '"');
 
         if ($text === '') {
-            return new WP_REST_Response(['error' => __('No response. Try again.', 'wp-wand')], 200);
+            return new WP_REST_Response(['error' => __('No response. Try again.', 'wp-wand-pro')], 200);
         }
 
         return new WP_REST_Response(['text' => $text], 200);

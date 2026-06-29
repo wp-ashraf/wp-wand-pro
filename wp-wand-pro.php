@@ -12,6 +12,10 @@
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
+if (!defined('ABSPATH')) {
+    exit; // No direct access.
+}
+
 // Define constants
 if (!function_exists('get_plugin_data')) {
     require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -67,12 +71,10 @@ function wpwand_pro_load_plugin()
 
 function wpwand_pro_init()
 {
-
-    // Add this in your settings page handler
     if (isset($_GET['force-check']) && check_admin_referer('wpwand_pro_force_update_check')) {
         wp_clean_plugins_cache();
         wp_update_plugins();
-        wp_redirect(admin_url('plugins.php'));
+        wp_safe_redirect(admin_url('plugins.php'));
         exit;
     }
 }
@@ -89,41 +91,15 @@ add_action('plugins_loaded', 'wpwand_pro_load_plugin_textdomain');
 
 function wpwand_pro_required_plugin_notice()
 {
-?>
-    <div class="notice notice-error">
-        <?php
-        $plugin = '<a href="' . esc_url('https://wordpress.org/plugins/ai-content-generation/') . '" target="_blank">' . __('WP Wand', 'wp-wand-pro') . '</a>';
-        printf(
-            '<p>%s %s %s %s</p>',
+    $plugin = '<a href="' . esc_url('https://wordpress.org/plugins/ai-content-generation/') . '" target="_blank">WP Wand</a>';
 
-            $plugin,
-            __(' is required to use this pro plugin. Please install and activate ', 'wp-wand-pro'),
-            $plugin,
-            __(' from here', 'wp-wand-pro')
-        );
-        ?>
-    </div>
-<?php
-}
+    /* translators: 1: WP Wand plugin link, 2: WP Wand plugin link */
+    $message = __('%1$s is required to use this Pro plugin. Please install and activate %2$s.', 'wp-wand-pro');
 
-function wpwand_pro_version_compatibility_notice()
-{
-?>
-    <div class="notice notice-error">
-        <p>
-            <?php
-            $force_update_url = wp_nonce_url(admin_url('admin.php?page=wpwand-settings&force-check=1'), 'wpwand_pro_force_update_check');
-            printf(
-                __('WP Wand Pro requires WP Wand version 1.2.8 or higher. Please update the WP Wand plugin to continue using WP Wand Pro and enjoy the full potential of WP Wand Pro. %sUpdate Now%s or %sForce Update Check%s', 'wp-wand-pro'),
-                '<a href="' . admin_url('plugins.php') . '">',
-                '</a>',
-                '<a href="' . esc_url($force_update_url) . '">',
-                '</a>'
-            );
-            ?>
-        </p>
-    </div>
-<?php
+    // $plugin is a safe esc_url link built above; the message is run through wp_kses.
+    echo '<div class="notice notice-error"><p>';
+    printf(wp_kses($message, ['a' => ['href' => [], 'target' => []]]), $plugin, $plugin); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo '</p></div>';
 }
 
 

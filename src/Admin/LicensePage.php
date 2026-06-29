@@ -25,8 +25,8 @@ final class LicensePage
 
         add_submenu_page(
             self::PARENT_SLUG,
-            __('License', 'wp-wand'),
-            __('License', 'wp-wand'),
+            __('License', 'wp-wand-pro'),
+            __('License', 'wp-wand-pro'),
             'manage_options',
             self::PAGE_SLUG,
             [$this, 'render'],
@@ -61,7 +61,7 @@ final class LicensePage
             'nonce' => wp_create_nonce('wp_rest'),
         ]);
         if (function_exists('wp_set_script_translations')) {
-            wp_set_script_translations(self::HANDLE, 'wp-wand');
+            wp_set_script_translations(self::HANDLE, 'wp-wand-pro');
         }
     }
 }

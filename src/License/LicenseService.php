@@ -40,12 +40,12 @@ class LicenseService
     {
         $key = trim($key);
         if ($key === '') {
-            return ['ok' => false, 'error' => __('Enter your license key.', 'wp-wand')];
+            return ['ok' => false, 'error' => __('Enter your license key.', 'wp-wand-pro')];
         }
 
         $tier = $this->detect_tier($key);
         if (!in_array($tier, ['agency', 'growth', 'solo'], true) && $tier !== true) {
-            return ['ok' => false, 'error' => __('That license key is not valid.', 'wp-wand')];
+            return ['ok' => false, 'error' => __('That license key is not valid.', 'wp-wand-pro')];
         }
 
         if ($tier === 'agency') {

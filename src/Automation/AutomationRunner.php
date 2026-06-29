@@ -44,7 +44,7 @@ final class AutomationRunner
         if (!isset($schedules[self::SCHEDULE])) {
             $schedules[self::SCHEDULE] = [
                 'interval' => 5 * MINUTE_IN_SECONDS,
-                'display'  => __('Every 5 minutes (WP Wand)', 'wp-wand'),
+                'display'  => __('Every 5 minutes (WP Wand)', 'wp-wand-pro'),
             ];
         }
         return $schedules;
@@ -105,7 +105,7 @@ final class AutomationRunner
         // this as the topic list being exhausted, so the schedule stays enabled.
         $remaining = UsageLimits::automation_remaining();
         if ($remaining <= 0) {
-            $this->lastError = __('Monthly automation limit reached. Upgrade to a higher plan to generate more.', 'wp-wand');
+            $this->lastError = __('Monthly automation limit reached. Upgrade to a higher plan to generate more.', 'wp-wand-pro');
             Schedules::update($id, $patch);
             return 0;
         }
@@ -220,11 +220,11 @@ final class AutomationRunner
         $res = \WPWand\Generation\Generator::generate($prompt, 1, ['max_tokens' => 400]);
         if (is_object($res) && isset($res->error)) {
             // Bubble up the real provider message (e.g. model rate-limited/down) for the UI.
-            $this->lastError = ErrorFormatter::humanize($res->error, __('Could not generate titles.', 'wp-wand'));
+            $this->lastError = ErrorFormatter::humanize($res->error, __('Could not generate titles.', 'wp-wand-pro'));
             return [];
         }
         if (!is_object($res) || !isset($res->choices[0])) {
-            $this->lastError = __('The AI returned no title ideas. Please try again.', 'wp-wand');
+            $this->lastError = __('The AI returned no title ideas. Please try again.', 'wp-wand-pro');
             return [];
         }
         $choice = $res->choices[0];

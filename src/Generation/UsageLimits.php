@@ -143,7 +143,7 @@ class UsageLimits
     {
         $limit = self::bulk_limit();
         return $limit === self::UNLIMITED
-            ? __('Unlimited', 'wp-wand')
+            ? __('Unlimited', 'wp-wand-pro')
             : self::bulk_used() . '/' . $limit;
     }
 
@@ -152,7 +152,7 @@ class UsageLimits
     {
         $limit = self::automation_limit();
         return $limit === self::UNLIMITED
-            ? __('Unlimited', 'wp-wand')
+            ? __('Unlimited', 'wp-wand-pro')
             : self::automation_used() . '/' . $limit;
     }
 }

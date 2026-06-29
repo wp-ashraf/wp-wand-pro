@@ -24,12 +24,12 @@ final class AutomationPage
         }
 
         // Menu title carries a "New" badge (HTML is allowed in the menu-title arg).
-        $menu_title = __('Automation', 'wp-wand')
-            . ' <span class="wpwand-menu-new">' . esc_html__('New', 'wp-wand') . '</span>';
+        $menu_title = __('Automation', 'wp-wand-pro')
+            . ' <span class="wpwand-menu-new">' . esc_html__('New', 'wp-wand-pro') . '</span>';
 
         add_submenu_page(
             self::PARENT_SLUG,
-            __('Automation', 'wp-wand'),
+            __('Automation', 'wp-wand-pro'),
             $menu_title,
             'edit_posts',
             self::PAGE_SLUG,
@@ -72,7 +72,7 @@ final class AutomationPage
             'brand' => \WPWand\Data\Brand::resolve()['color'],
         ]);
         if (function_exists('wp_set_script_translations')) {
-            wp_set_script_translations(self::HANDLE, 'wp-wand');
+            wp_set_script_translations(self::HANDLE, 'wp-wand-pro');
         }
     }
 }

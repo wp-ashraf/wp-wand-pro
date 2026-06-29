@@ -26,12 +26,12 @@ final class WooCommerceController extends AbstractController
     public function generate(WP_REST_Request $request): WP_REST_Response
     {
         if (!class_exists('WPWand\Generation\Generator')) {
-            return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand')], 503);
+            return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand-pro')], 503);
         }
 
         $brief = sanitize_textarea_field((string) $request->get_param('prompt'));
         if ($brief === '') {
-            return new WP_REST_Response(['error' => __('Describe the product first.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Describe the product first.', 'wp-wand-pro')], 400);
         }
 
         $title = $this->text(\WPWand\Generation\Generator::generate(
@@ -43,7 +43,7 @@ final class WooCommerceController extends AbstractController
         ));
 
         if ($title === '' && $description === '') {
-            return new WP_REST_Response(['error' => __('No response. Try again.', 'wp-wand')], 200);
+            return new WP_REST_Response(['error' => __('No response. Try again.', 'wp-wand-pro')], 200);
         }
 
         return new WP_REST_Response([

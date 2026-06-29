@@ -115,7 +115,7 @@ final class CustomPromptsController extends AbstractController
             $type = 'template';
         }
         if ($title === '' || $prompt === '') {
-            return ['', '', $type, __('Title and prompt are required.', 'wp-wand')];
+            return ['', '', $type, __('Title and prompt are required.', 'wp-wand-pro')];
         }
         return [$title, $prompt, $type, null];
     }

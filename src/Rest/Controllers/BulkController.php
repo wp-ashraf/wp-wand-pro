@@ -68,11 +68,11 @@ final class BulkController extends AbstractController
         $id  = absint($request['id']);
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE id = %d", $id), ARRAY_A); // phpcs:ignore
         if (!$row) {
-            return new WP_REST_Response(['error' => __('Not found.', 'wp-wand')], 404);
+            return new WP_REST_Response(['error' => __('Not found.', 'wp-wand-pro')], 404);
         }
 
         if (!(new JobRunner())->retry($id)) {
-            return new WP_REST_Response(['error' => __('Nothing to retry for this post.', 'wp-wand')], 200);
+            return new WP_REST_Response(['error' => __('Nothing to retry for this post.', 'wp-wand-pro')], 200);
         }
 
         // Always arm the new-engine WP-Cron drainer so the re-queued job processes even when the
@@ -91,7 +91,7 @@ final class BulkController extends AbstractController
         $id  = absint($request['id']);
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE id = %d", $id), ARRAY_A); // phpcs:ignore
         if (!$row) {
-            return new WP_REST_Response(['error' => __('Not found.', 'wp-wand')], 404);
+            return new WP_REST_Response(['error' => __('Not found.', 'wp-wand-pro')], 404);
         }
 
         return new WP_REST_Response([
@@ -112,7 +112,7 @@ final class BulkController extends AbstractController
         $id  = absint($request['id']);
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE id = %d", $id), ARRAY_A); // phpcs:ignore
         if (!$row || trim((string) $row['title']) === '') {
-            return new WP_REST_Response(['error' => __('Nothing to approve.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Nothing to approve.', 'wp-wand-pro')], 400);
         }
 
         $post_id = wp_insert_post([
@@ -123,7 +123,7 @@ final class BulkController extends AbstractController
         ]);
 
         if (!$post_id || is_wp_error($post_id)) {
-            return new WP_REST_Response(['error' => __('Could not create the post.', 'wp-wand')], 200);
+            return new WP_REST_Response(['error' => __('Could not create the post.', 'wp-wand-pro')], 200);
         }
 
         if (!empty($row['featured_image_id'])) {
@@ -166,13 +166,13 @@ final class BulkController extends AbstractController
     public function titles(WP_REST_Request $request): WP_REST_Response
     {
         if (!class_exists('WPWand\Generation\Generator')) {
-            return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand')], 503);
+            return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand-pro')], 503);
         }
 
         $topic = sanitize_text_field((string) $request->get_param('topic'));
         $count = max(1, min(10, absint($request->get_param('count') ?: 3)));
         if ($topic === '') {
-            return new WP_REST_Response(['error' => __('Please enter a topic.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Please enter a topic.', 'wp-wand-pro')], 400);
         }
 
         $language = get_option('wpwand_language') ?: 'English';
@@ -182,7 +182,7 @@ final class BulkController extends AbstractController
         );
 
         if (is_object($content) && isset($content->error)) {
-            $msg = \WPWand\Generation\ErrorFormatter::humanize($content->error, __('Failed.', 'wp-wand'));
+            $msg = \WPWand\Generation\ErrorFormatter::humanize($content->error, __('Failed.', 'wp-wand-pro'));
             return new WP_REST_Response(['error' => $msg], 200);
         }
 
@@ -206,19 +206,19 @@ final class BulkController extends AbstractController
 
         // Respect the tier cap (Solo 100 / Growth 300 / Agency unlimited), resetting monthly.
         if (!\WPWand\Generation\UsageLimits::can_bulk()) {
-            return new WP_REST_Response(['error' => __('Monthly bulk generation limit reached.', 'wp-wand')], 200);
+            return new WP_REST_Response(['error' => __('Monthly bulk generation limit reached.', 'wp-wand-pro')], 200);
         }
 
         $titles = (array) $request->get_param('titles');
         $titles = array_values(array_filter(array_map(static fn ($t) => sanitize_text_field((string) $t), $titles)));
         if (empty($titles)) {
-            return new WP_REST_Response(['error' => __('Select at least one title.', 'wp-wand')], 400);
+            return new WP_REST_Response(['error' => __('Select at least one title.', 'wp-wand-pro')], 400);
         }
 
         // Only generate as many as the remaining monthly allowance permits.
         $titles = array_slice($titles, 0, \WPWand\Generation\UsageLimits::bulk_remaining());
         if (empty($titles)) {
-            return new WP_REST_Response(['error' => __('Monthly bulk generation limit reached.', 'wp-wand')], 200);
+            return new WP_REST_Response(['error' => __('Monthly bulk generation limit reached.', 'wp-wand-pro')], 200);
         }
 
         $word_count = absint($request->get_param('word_count'));

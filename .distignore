@@ -1,0 +1,14 @@
+# Files excluded from the distributed plugin ZIP (e.g. via `wp dist-archive`).
+# Keeps dev-only artifacts out of releases so Plugin Check passes on the shipped build.
+/.git
+/.github
+/.gitignore
+/.distignore
+/.DS_Store
+/node_modules
+/assets/src
+/webpack.config.js
+/package.json
+/package-lock.json
+/postcss.config.js
+/.eslintrc.js
