@@ -60,7 +60,7 @@ final class WooCommerceIntegration
             return;
         }
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-        if (!$screen || $screen->post_type !== 'product' || !function_exists('wpwand_pro_init')) {
+        if (!$screen || $screen->post_type !== 'product' || !\WPWand\Core\Pro::unlocked()) {
             return;
         }
 

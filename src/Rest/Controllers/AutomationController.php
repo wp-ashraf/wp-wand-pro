@@ -64,7 +64,7 @@ final class AutomationController extends AbstractController
 
     public function can_pro(): bool
     {
-        return $this->can_use() && function_exists('wpwand_pro_init');
+        return $this->can_use() && \WPWand\Core\Pro::unlocked();
     }
 
     public function index(): WP_REST_Response
@@ -164,7 +164,7 @@ final class AutomationController extends AbstractController
 
     public function can_delete(): bool
     {
-        return current_user_can('delete_posts') && function_exists('wpwand_pro_init');
+        return current_user_can('delete_posts') && \WPWand\Core\Pro::unlocked();
     }
 
     /** Trash a generated post (only posts this plugin scheduled). */
@@ -201,7 +201,7 @@ final class AutomationController extends AbstractController
 
     public function can_publish(): bool
     {
-        return current_user_can('publish_posts') && function_exists('wpwand_pro_init');
+        return current_user_can('publish_posts') && \WPWand\Core\Pro::unlocked();
     }
 
     /** Publish a generated draft (only posts this plugin scheduled). */

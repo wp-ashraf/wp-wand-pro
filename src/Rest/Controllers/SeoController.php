@@ -22,7 +22,7 @@ final class SeoController extends AbstractController
 
     public function can_pro(): bool
     {
-        return $this->can_use() && function_exists('wpwand_pro_init');
+        return $this->can_use() && \WPWand\Core\Pro::unlocked();
     }
 
     public function generate(WP_REST_Request $request): WP_REST_Response

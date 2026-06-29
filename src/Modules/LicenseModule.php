@@ -21,7 +21,9 @@ final class LicenseModule extends AbstractModule
 
     public function requires_pro(): bool
     {
-        return true;
+        // The License screen must stay reachable WITHOUT an active license — it's how you activate
+        // (or re-activate after a deactivation). It's only registered when the Pro plugin is present.
+        return false;
     }
 
     public function boot(): void

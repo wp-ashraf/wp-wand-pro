@@ -19,7 +19,7 @@ final class BulkPage
 
     public function add_menu(): void
     {
-        if (!function_exists('wpwand_pro_init')) {
+        if (!\WPWand\Core\Pro::unlocked()) {
             return;
         }
 

@@ -30,7 +30,7 @@ final class SeoIntegration
             return;
         }
         // Legacy SEO button is Pro-gated; only wire the working one when Pro is active.
-        if (!function_exists('wpwand_pro_init')) {
+        if (!\WPWand\Core\Pro::unlocked()) {
             return;
         }
 

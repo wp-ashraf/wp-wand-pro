@@ -140,7 +140,7 @@ final class BulkController extends AbstractController
 
     public function can_pro(): bool
     {
-        return $this->can_use() && function_exists('wpwand_pro_init');
+        return $this->can_use() && \WPWand\Core\Pro::unlocked();
     }
 
     private function table(): string
