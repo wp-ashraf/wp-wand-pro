@@ -13,7 +13,7 @@ final class AutomationPage
 
     public function register(): void
     {
-        add_action('admin_menu', [$this, 'add_menu'], 20);
+        add_action('admin_menu', [$this, 'add_menu'], 21);
         add_action('admin_enqueue_scripts', [$this, 'enqueue']);
     }
 
@@ -23,14 +23,25 @@ final class AutomationPage
             return;
         }
 
+        // Menu title carries a "New" badge (HTML is allowed in the menu-title arg).
+        $menu_title = __('Automation', 'wp-wand')
+            . ' <span class="wpwand-menu-new">' . esc_html__('New', 'wp-wand') . '</span>';
+
         add_submenu_page(
             self::PARENT_SLUG,
             __('Automation', 'wp-wand'),
-            __('Automation', 'wp-wand'),
+            $menu_title,
             'edit_posts',
             self::PAGE_SLUG,
-            [$this, 'render']
+            [$this, 'render'],
+            30 // order: after Bulk Posts (25), before History (35)
         );
+
+        add_action('admin_head', static function () {
+            echo '<style>#adminmenu .wpwand-menu-new{display:inline-block;margin-left:6px;padding:1px 6px;'
+                . 'border-radius:9px;background:#d63638;color:#fff;font-size:9px;font-weight:600;'
+                . 'line-height:1.6;text-transform:uppercase;vertical-align:middle;}</style>';
+        });
     }
 
     public function render(): void

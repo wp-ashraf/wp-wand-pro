@@ -13,7 +13,7 @@ final class LicensePage
 
     public function register(): void
     {
-        add_action('admin_menu', [$this, 'add_menu'], 20);
+        add_action('admin_menu', [$this, 'add_menu'], 23);
         add_action('admin_enqueue_scripts', [$this, 'enqueue']);
     }
 
@@ -29,7 +29,8 @@ final class LicensePage
             __('License', 'wp-wand'),
             'manage_options',
             self::PAGE_SLUG,
-            [$this, 'render']
+            [$this, 'render'],
+            40 // order: last
         );
     }
 

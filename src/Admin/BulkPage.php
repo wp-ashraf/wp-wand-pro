@@ -29,7 +29,8 @@ final class BulkPage
             __('Bulk Posts', 'wp-wand'),
             'edit_posts',
             self::PAGE_SLUG,
-            [$this, 'render']
+            [$this, 'render'],
+            25 // order: first Pro item, after Settings
         );
     }
 
