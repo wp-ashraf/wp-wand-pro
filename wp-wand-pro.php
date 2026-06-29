@@ -37,60 +37,31 @@ add_action('plugins_loaded', 'wpwand_pro_load_plugin', 20);
 
 
 function wpwand_pro_load_plugin()
-
 {
-
-
-
     define('WPWAND_PRO_VERSION', get_plugin_data(__FILE__)['Version']);
 
-
-
+    // The free plugin must be present and booted first.
     if (!function_exists('wpwand_init')) {
-
         add_action('admin_notices', 'wpwand_pro_required_plugin_notice');
-
-
-
         return;
-
     }
-
-
-
     if (!did_action('wpwand_init')) {
         return;
     }
 
-
-    require_once WPWAND_PRO_PLUGIN_DIR . 'inc/db.php';
-
-    // Vendor Autoload
+    // Vendor libraries used by the new architecture (Markdown rendering, etc.).
     if (!class_exists('Orhanerday\OpenAi\OpenAi')) {
         require __DIR__ . '/vendor/orhanerday/open-ai/src/Url.php';
         require __DIR__ . '/vendor/orhanerday/open-ai/src/OpenAi.php';
     }
-
-
     if (!class_exists('Parsedown')) {
         require __DIR__ . '/vendor/parsedown/parsdown.php';
     }
 
-    // Legacy procedural side: license functions always; the Pro feature includes only when licensed.
-    require_once WPWAND_PRO_PLUGIN_DIR . 'inc/tala.php';
-    if (wpwand_pro_tala_check()) {
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/data.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/helper-functions.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/custom-prompts.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/sada.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/WooCommerce.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/api.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/history.php';
-        require_once WPWAND_PRO_PLUGIN_DIR . 'inc/post-generator.php';
-    }
-
-    // Updates are handled by WPWand\License\UpdateChecker (wired from LicenseModule); the legacy
-    // WPWandUdChecker in inc/tala.php is intentionally NOT instantiated (would double-register).
+    // The legacy procedural inc/* code has been fully removed — the new src/ architecture
+    // (bootstrap.php) provides everything: license, bulk, automation, custom prompts, SEO,
+    // WooCommerce, history and white-label. Pro DB tables are created by the free plugin's
+    // migration runner; updates by WPWand\License\UpdateChecker.
 }
 
 
