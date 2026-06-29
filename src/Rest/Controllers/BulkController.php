@@ -294,7 +294,7 @@ final class BulkController extends AbstractController
         // Background generation in progress? Matches the legacy "Generating Bulk Post…" header.
         // The active engine decides what "running" means; OR the per-row fallback either way.
         $engine  = (string) get_option('wpwand_gen_engine', 'browser');
-        $running = (new JobRunner())->is_running();
+        $running = (new JobRunner())->is_running('bulk');
         if ($engine === 'action_scheduler') {
             $running = $running || $this->as_process_running();
         }

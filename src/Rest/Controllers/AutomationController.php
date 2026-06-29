@@ -75,7 +75,7 @@ final class AutomationController extends AbstractController
                 'frequencies' => ['hourly', 'daily', 'weekly'],
                 'statuses'    => ['draft', 'pending', 'publish'],
                 // Live queue state — lets the page show/advance generation without a manual refresh.
-                'queue'       => (new JobRunner())->snapshot(),
+                'queue'       => (new JobRunner())->snapshot('automation'),
                 // Monthly automation allowance (mirrors the Bulk page's counter + upgrade gate).
                 'usage'       => [
                     'used'      => UsageLimits::automation_used(),
@@ -132,7 +132,7 @@ final class AutomationController extends AbstractController
             // Why nothing was queued (model error / limit reached), so the UI shows the REAL reason
             // instead of always blaming the topic list.
             'error'    => $runner->last_error(),
-            'snapshot' => (new JobRunner())->snapshot(),
+            'snapshot' => (new JobRunner())->snapshot('automation'),
             'schedule' => $fresh ? $this->present($fresh) : null,
         ], 200);
     }

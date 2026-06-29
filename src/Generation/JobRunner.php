@@ -82,27 +82,47 @@ final class JobRunner
         return $ids;
     }
 
-    /** True while any job still needs work. */
-    public function is_running(): bool
+    /** True while any job (optionally limited to a scope) still needs work. */
+    public function is_running(string $scope = 'all'): bool
     {
         global $wpdb;
+        $w = $this->scope_where($scope);
         $n = (int) $wpdb->get_var(
-            "SELECT COUNT(*) FROM {$this->jobs_table()} WHERE status IN ('pending','processing')" // phpcs:ignore
+            "SELECT COUNT(*) FROM {$this->jobs_table()} WHERE status IN ('pending','processing'){$w}" // phpcs:ignore
         );
         return $n > 0;
     }
 
     /** Pending/processing vs total — for progress display. */
-    public function snapshot(): array
+    /**
+     * Queue progress. $scope separates the two job sources that share this table: 'automation'
+     * (jobs carrying a schedule_id) vs 'bulk' (everything else) vs 'all' — so the Bulk page and the
+     * Automation page each only reflect their OWN jobs.
+     */
+    public function snapshot(string $scope = 'all'): array
     {
         global $wpdb;
-        $t = $this->jobs_table();
+        $t   = $this->jobs_table();
+        $w   = $this->scope_where($scope);
+        $rem = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status IN ('pending','processing'){$w}"); // phpcs:ignore
         return [
-            'running'   => $this->is_running(),
-            'remaining' => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status IN ('pending','processing')"), // phpcs:ignore
-            'done'      => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status='done'"), // phpcs:ignore
-            'failed'    => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status='failed'"), // phpcs:ignore
+            'running'   => $rem > 0,
+            'remaining' => $rem,
+            'done'      => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status='done'{$w}"), // phpcs:ignore
+            'failed'    => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status='failed'{$w}"), // phpcs:ignore
         ];
+    }
+
+    /** WHERE fragment that limits a query to a job source. Automation jobs carry a schedule_id. */
+    private function scope_where(string $scope): string
+    {
+        if ($scope === 'automation') {
+            return " AND settings LIKE '%\"schedule_id\"%'";
+        }
+        if ($scope === 'bulk') {
+            return " AND settings NOT LIKE '%\"schedule_id\"%'";
+        }
+        return '';
     }
 
     /**
