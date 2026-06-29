@@ -42,7 +42,10 @@ add_action('plugins_loaded', 'wpwand_pro_load_plugin', 20);
 
 function wpwand_pro_load_plugin()
 {
-    define('WPWAND_PRO_VERSION', get_plugin_data(__FILE__)['Version']);
+    // Pass $markup=false, $translate=false: we only need the version, and translating the
+    // header here (at plugins_loaded, before init) would trip WP 6.7+'s just-in-time
+    // textdomain notice for the 'wp-wand-pro' domain.
+    define('WPWAND_PRO_VERSION', get_plugin_data(__FILE__, false, false)['Version']);
 
     // The free plugin must be present and booted first.
     if (!function_exists('wpwand_init')) {
