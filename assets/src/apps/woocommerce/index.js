@@ -3,6 +3,8 @@
  * product title + description from a short brief and inserts them. Plain JS; defensive.
  * Replaces the legacy woocommerce.js.
  */
+import { renderMarkdown } from '../../shared/markdown';
+
 ( function () {
 	const cfg = window.wpwandWc || {};
 
@@ -29,13 +31,16 @@
 	}
 
 	function insertContent( text ) {
+		// The AI returns markdown; convert it to HTML so the product description shows formatted
+		// text (headings, lists, bold) instead of raw ## / - / ** markers.
+		const html = renderMarkdown( text );
 		const tmce = window.tinyMCE && window.tinyMCE.get( 'content' );
 		if ( tmce && ! tmce.isHidden() ) {
-			tmce.setContent( text.replace( /\n/g, '<br>' ) );
+			tmce.setContent( html );
 		} else {
 			const ta = document.querySelector( '#content' );
 			if ( ta ) {
-				setNativeValue( ta, text );
+				setNativeValue( ta, html );
 			}
 		}
 	}
