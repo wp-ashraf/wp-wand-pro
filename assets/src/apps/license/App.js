@@ -9,6 +9,7 @@ import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../shared/apiClient';
+import LoadingSkeleton from '../../shared/LoadingSkeleton';
 
 const TIER_LABELS = {
 	agency: __( 'Agency', 'wp-wand' ),
@@ -133,6 +134,16 @@ export default function App() {
 		},
 	} );
 
+	// Initial page-load: continue the server-painted skeleton until license status arrives.
+	if ( isLoading ) {
+		return (
+			<LoadingSkeleton
+				title={ __( 'WP Wand License', 'wp-wand' ) }
+				rows={ 3 }
+			/>
+		);
+	}
+
 	const active = status && status.active;
 	const tier = status ? status.tier : 'none';
 
@@ -146,14 +157,11 @@ export default function App() {
 					{ __( 'WP Wand License', 'wp-wand' ) }
 				</h1>
 			</div>
+			{ /* Anchor so WP relocates admin notices below the header, not into the flex row. */ }
+			<hr className="wp-header-end" />
 
 			<div className="wpwl-card">
-				{ isLoading ? (
-					<div className="wpwl-loading">
-						{ __( 'Loading…', 'wp-wand' ) }
-					</div>
-				) : (
-					<>
+				<>
 						<div className="wpwl-status">
 							<span
 								className={
@@ -239,8 +247,7 @@ export default function App() {
 								</button>
 							</form>
 						) }
-					</>
-				) }
+				</>
 			</div>
 
 			{ active && <UpdateBox /> }

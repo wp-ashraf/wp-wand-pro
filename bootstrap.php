@@ -42,36 +42,15 @@ spl_autoload_register(static function ($class) {
 });
 
 /*
- * Generation-engine infrastructure (WP-Cron drainer + schedule) for the Bulk/Automation queue.
- * Lives in Pro now; registered when Pro loads.
+ * Pro data/unlock filters (editor prompts + AI characters). Always registered; the callbacks gate on
+ * the live license, so unlock follows activation exactly like the legacy data.php. (The Bulk/Automation
+ * job-queue engine now lives in the free plugin, which registers its own EngineHooks drainer.)
  */
 add_action('plugins_loaded', static function () {
-    if (class_exists('WPWand\\Generation\\EngineHooks')) {
-        (new \WPWand\Generation\EngineHooks())->register();
-    }
-    // Pro data/unlock filters (editor prompts + AI characters). Always registered; the callbacks
-    // gate on the live license, so unlock follows activation exactly like the legacy data.php.
     if (class_exists('WPWand\\Data\\ProData')) {
         \WPWand\Data\ProData::register();
     }
 }, 21);
-
-/*
- * Per-release module switches.
- *
- * Add a module id here to ship a release WITHOUT that feature: a disabled module registers
- * neither its admin page nor its REST routes, and (for Automation) its WP-Cron scheduler never
- * boots — so nothing generates in the background. This is the "might not release Automation this
- * version" flow. To turn a module back on, remove it from this list (or filter it back out via
- * `wpwand_disabled_modules` elsewhere). Module ids: bulk, automation, custom-prompts, woocommerce,
- * seo, license.
- */
-add_filter('wpwand_disabled_modules', static function ($disabled) {
-    $disabled = (array) $disabled;
-    // Automation is OFF for this release.
-    // $disabled[] = 'automation';
-    return array_values(array_unique($disabled));
-});
 
 /*
  * Cutover cleanup: the React screens (Bulk / License / Automation / History) are now primary, so
@@ -91,8 +70,6 @@ add_action('admin_menu', static function () {
  */
 add_action('wpwand_register_modules', static function ($manager) {
     $modules = [
-        \WPWand\Modules\BulkModule::class,
-        \WPWand\Modules\AutomationModule::class,
         \WPWand\Modules\CustomPromptsModule::class,
         \WPWand\Modules\WooCommerceModule::class,
         \WPWand\Modules\SeoModule::class,

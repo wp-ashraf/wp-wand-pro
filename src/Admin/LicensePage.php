@@ -25,8 +25,8 @@ final class LicensePage
 
         add_submenu_page(
             self::PARENT_SLUG,
-            __('License', 'wp-wand-pro'),
-            __('License', 'wp-wand-pro'),
+            __('Activate Pro', 'wp-wand-pro'),
+            __('Activate Pro', 'wp-wand-pro'),
             'manage_options',
             self::PAGE_SLUG,
             [$this, 'render'],
@@ -36,7 +36,17 @@ final class LicensePage
 
     public function render(): void
     {
-        echo '<div class="wrap"><div id="wpwand-license-root"></div></div>';
+        // JS-free skeleton paints instantly; React's createRoot() clears it on mount. See Skeleton.
+        // Skeleton + Brand live in the free plugin but share the WPWand\ namespace, so free's
+        // autoloader resolves them here. Guard in case free is inactive, then fall back to a bare mount.
+        echo '<div class="wrap"><div id="wpwand-license-root">';
+        if (class_exists('\WPWand\Admin\Skeleton')) {
+            $title = class_exists('\WPWand\Data\Brand')
+                ? (\WPWand\Data\Brand::resolve()['name'] ?: 'WP Wand')
+                : 'License';
+            echo \WPWand\Admin\Skeleton::panel($title, [], 3); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside Skeleton
+        }
+        echo '</div></div>';
     }
 
     public function enqueue(string $hook): void

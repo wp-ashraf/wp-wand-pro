@@ -70,7 +70,10 @@ import { renderMarkdown } from '../../shared/markdown';
 		);
 		head.appendChild( el( 'span', '', 'Generate Product Content' ) );
 		const close = el( 'span', 'cursor:pointer;', '✕' );
-		close.addEventListener( 'click', () => ( panel.style.display = 'none' ) );
+		close.addEventListener(
+			'click',
+			() => ( panel.style.display = 'none' )
+		);
 		head.appendChild( close );
 
 		const body = el( 'div', 'padding:14px;' );
@@ -94,23 +97,34 @@ import { renderMarkdown } from '../../shared/markdown';
 			gen.disabled = true;
 			gen.textContent = 'Generating…';
 			out.innerHTML = '';
-			fetch( ( cfg.root || '/wp-json/' ) + 'wpwand/v1/woocommerce/product', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': cfg.nonce || '',
-				},
-				credentials: 'same-origin',
-				body: JSON.stringify( { prompt: ta.value.trim() } ),
-			} )
+			fetch(
+				( cfg.root || '/wp-json/' ) + 'wpwand/v1/woocommerce/product',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': cfg.nonce || '',
+					},
+					credentials: 'same-origin',
+					body: JSON.stringify( { prompt: ta.value.trim() } ),
+				}
+			)
 				.then( ( r ) => r.json() )
 				.then( ( res ) => {
 					if ( res.error ) {
-						out.appendChild( el( 'p', 'color:#b32d2e;font-size:13px;', res.error ) );
+						out.appendChild(
+							el(
+								'p',
+								'color:#b32d2e;font-size:13px;',
+								res.error
+							)
+						);
 						return;
 					}
 					out.appendChild(
-						resultBlock( 'Title', res.title, () => insertTitle( res.title ) )
+						resultBlock( 'Title', res.title, () =>
+							insertTitle( res.title )
+						)
 					);
 					out.appendChild(
 						resultBlock( 'Description', res.description, () =>
@@ -143,7 +157,9 @@ import { renderMarkdown } from '../../shared/markdown';
 			'div',
 			'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'
 		);
-		top.appendChild( el( 'strong', 'font-size:12px;color:#454f5c;', label ) );
+		top.appendChild(
+			el( 'strong', 'font-size:12px;color:#454f5c;', label )
+		);
 		const ins = el(
 			'button',
 			'background:#fff;border:1px solid #e4e4e7;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;',
@@ -152,7 +168,13 @@ import { renderMarkdown } from '../../shared/markdown';
 		ins.addEventListener( 'click', onInsert );
 		top.appendChild( ins );
 		wrap.appendChild( top );
-		wrap.appendChild( el( 'div', 'font-size:13px;line-height:1.5;color:#080e13;white-space:pre-wrap;', text ) );
+		wrap.appendChild(
+			el(
+				'div',
+				'font-size:13px;line-height:1.5;color:#080e13;white-space:pre-wrap;',
+				text
+			)
+		);
 		return wrap;
 	}
 
@@ -171,7 +193,8 @@ import { renderMarkdown } from '../../shared/markdown';
 		btn.id = 'wpwand-wc-trigger';
 		btn.type = 'button';
 		btn.addEventListener( 'click', () => {
-			panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+			panel.style.display =
+				panel.style.display === 'none' ? 'block' : 'none';
 		} );
 		titleWrap.appendChild( btn );
 	}
