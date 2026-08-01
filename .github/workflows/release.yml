@@ -51,15 +51,20 @@ jobs:
           # Named after the slug (not the version) so the update server always serves the latest.
           ( cd /tmp/stage && zip -rqX "$GITHUB_WORKSPACE/dist/wp-wand-pro.zip" wp-wand-pro )
 
-      - name: Upload package to the update server
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
-        with:
-          server: ${{ secrets.UPDATE_SFTP_SERVER }}
-          port: ${{ secrets.UPDATE_SFTP_PORT }}
-          username: ${{ secrets.UPDATE_SFTP_USERNAME }}
-          password: ${{ secrets.UPDATE_SFTP_PASSWORD }}
-          local_path: './dist/wp-wand-pro.zip'
-          remote_path: ${{ secrets.UPDATE_PACKAGE_PATH }}
+      - name: Upload package to the update server (FTPS, single file)
+        env:
+          FTP_HOST: ${{ secrets.UPDATE_SFTP_SERVER }}
+          FTP_USER: ${{ secrets.UPDATE_SFTP_USERNAME }}
+          FTP_PASS: ${{ secrets.UPDATE_SFTP_PASSWORD }}
+          # Home-relative path to the update server package dir, e.g. updates.finestwp.co/plugins/packages
+          FTP_DIR: ${{ secrets.UPDATE_PACKAGE_PATH }}
+        run: |
+          # Upload ONLY this one file over explicit FTPS; nothing else in the dir is touched.
+          curl --fail --show-error --silent --ssl-reqd --insecure \
+            --user "$FTP_USER:$FTP_PASS" \
+            -T dist/wp-wand-pro.zip \
+            "ftp://$FTP_HOST/$FTP_DIR/wp-wand-pro.zip"
+          echo "Uploaded wp-wand-pro.zip to $FTP_DIR"
 
       - name: Attach the ZIP to a GitHub Release
         if: startsWith(github.ref, 'refs/tags/') # only on a real version tag, not manual test runs
