@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies and build assets
         run: |
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
 
       - name: Stage and zip (folder wp-wand-pro, excludes from .distignore)
