@@ -26,6 +26,39 @@ class TalaClient
     private const UPDATE_PLUGIN = 'wpwand';
 
     /**
+     * Seconds to wait on a licence call. WordPress defaults to 5, and the server has been measured
+     * at 1.4-2.8s, so 5 leaves almost no headroom on a slow link — a customer whose activation
+     * simply took too long was told their key was invalid. The update check deliberately keeps the
+     * 5s default: it runs from the update-transient filter on admin pages, and a longer wait there
+     * would stall every admin screen on a host with blocked outbound HTTP.
+     */
+    private const LICENSE_TIMEOUT = 15;
+
+    /**
+     * Why the last call failed, or null if it succeeded.
+     *
+     * Without this a network failure, a 500, an HTML error page from a WAF and a genuine "this key
+     * is not recognised" were all just `false`, so everyone saw the same sentence no matter what
+     * had actually gone wrong.
+     *
+     * @var array{reason:string, detail:string}|null
+     */
+    private $last_error = null;
+
+    /**
+     * The failure behind the most recent call.
+     *
+     * reason is 'network' (never reached the server), 'http' (reached it, got an error status),
+     * 'empty' (200 with nothing usable) or 'refused' (the server answered, and said no).
+     *
+     * @return array{reason:string, detail:string}|null
+     */
+    public function last_error(): ?array
+    {
+        return $this->last_error;
+    }
+
+    /**
      * Validate a key against the server. Returns the decoded response: `true`, a tier string
      * ("agency"/"growth"/"solo"), or false on any failure. Mirrors wpwand_pro_check_tala().
      *
@@ -102,15 +135,40 @@ class TalaClient
      */
     private function get(string $type, string $key, string $plugin, bool $assoc = false)
     {
-        $response = $this->raw_get($plugin, $type, $key);
+        $this->last_error = null;
+
+        $response = $this->raw_get($plugin, $type, $key, self::LICENSE_TIMEOUT);
+
         if (is_wp_error($response)) {
+            $this->last_error = ['reason' => 'network', 'detail' => $response->get_error_message()];
             return false;
         }
-        return json_decode((string) wp_remote_retrieve_body($response), $assoc);
+
+        // update_info() has always checked this; the licence path never did, so an error page was
+        // decoded as if it were an answer. A non-200 here is never a usable body: the server returns
+        // the tier on 200 and a WP_Error envelope otherwise.
+        $code = (int) wp_remote_retrieve_response_code($response);
+        if ($code !== 200) {
+            $this->last_error = ['reason' => 'http', 'detail' => (string) $code];
+            return false;
+        }
+
+        $body = (string) wp_remote_retrieve_body($response);
+        if (trim($body) === '') {
+            $this->last_error = ['reason' => 'empty', 'detail' => ''];
+            return false;
+        }
+
+        $decoded = json_decode($body, $assoc);
+        if ($decoded === false || $decoded === null) {
+            $this->last_error = ['reason' => 'refused', 'detail' => ''];
+        }
+
+        return $decoded;
     }
 
     /** Perform the actual HTTP GET against TALA. */
-    private function raw_get(string $plugin, string $type, string $key)
+    private function raw_get(string $plugin, string $type, string $key, ?int $timeout = null)
     {
         // add_query_arg url-encodes each value once — matches legacy (which sent the bare key and a
         // single-urlencoded home url). Don't pre-encode here or the key would be double-encoded.
@@ -124,8 +182,11 @@ class TalaClient
             self::BASE
         );
 
-        return wp_safe_remote_get($url, [
-            'headers' => ['Accept' => 'application/json'],
-        ]);
+        $args = ['headers' => ['Accept' => 'application/json']];
+        if ($timeout !== null) {
+            $args['timeout'] = $timeout;
+        }
+
+        return wp_safe_remote_get($url, $args);
     }
 }

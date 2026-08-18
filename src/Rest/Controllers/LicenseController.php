@@ -63,9 +63,21 @@ final class LicenseController extends AbstractController
     {
         $result = $this->service->activate((string) $request->get_param('key'));
         if (!$result['ok']) {
-            return new WP_REST_Response(['error' => $result['error']], 400);
+            // Both keys on purpose: api-fetch throws this body verbatim on a non-2xx and the client
+            // reads .message, while older bundles read .error. Sending one alone loses the sentence
+            // in whichever direction ships first.
+            return new WP_REST_Response(
+                ['error' => $result['error'], 'message' => $result['error']],
+                400
+            );
         }
-        return new WP_REST_Response($result['state'], 200);
+
+        $state = $result['state'];
+        if (!empty($result['warning'])) {
+            $state['warning'] = $result['warning'];
+        }
+
+        return new WP_REST_Response($state, 200);
     }
 
     public function deactivate(): WP_REST_Response

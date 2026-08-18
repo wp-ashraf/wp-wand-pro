@@ -45,7 +45,7 @@ class LicenseService
 
         $tier = $this->detect_tier($key);
         if (!in_array($tier, ['agency', 'growth', 'solo'], true) && $tier !== true) {
-            return ['ok' => false, 'error' => __('That license key is not valid.', 'wp-wand-pro')];
+            return ['ok' => false, 'error' => $this->activation_error()];
         }
 
         if ($tier === 'agency') {
@@ -59,9 +59,56 @@ class LicenseService
         update_option(self::OPT_KEY, $key);
         update_option(self::OPT_STATUS, 'activated');
 
-        $this->tala->refresh_data($key); // pull Pro templates/features for this key
+        // Pull Pro templates/features for this key. A failure here is NOT fatal — the licence is
+        // already recorded above and Pro is unlocked — but staying silent about it left people with
+        // an activated licence and a free-looking template list, and nothing to explain the gap.
+        $data_ok = $this->tala->refresh_data($key);
 
-        return ['ok' => true, 'state' => $this->snapshot()];
+        $result = ['ok' => true, 'state' => $this->snapshot()];
+        if (!$data_ok) {
+            $result['warning'] = __(
+                "Activated. We couldn't download your Pro templates just now — reload in a minute and they'll appear.",
+                'wp-wand-pro'
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Turn the last failure into something the customer can act on.
+     *
+     * Every cause used to arrive as the same "That license key is not valid." — so a firewall, an
+     * outage and a typo were indistinguishable, and someone who had genuinely paid was told their
+     * key was fake. Only say the key is wrong when the server actually said so.
+     */
+    private function activation_error(): string
+    {
+        $last = $this->tala->last_error();
+
+        switch ($last['reason'] ?? 'refused') {
+            case 'network':
+                return __(
+                    "We couldn't reach the licence server. Check the site can make outgoing requests, then try again.",
+                    'wp-wand-pro'
+                );
+            case 'http':
+                return sprintf(
+                    /* translators: %s: HTTP status code returned by the licence server */
+                    __('The licence server returned an error (HTTP %s). Nothing is wrong with your key — please try again shortly.', 'wp-wand-pro'),
+                    $last['detail'] !== '' ? $last['detail'] : '?'
+                );
+            case 'empty':
+                return __(
+                    'The licence server sent an empty reply. Please try again shortly.',
+                    'wp-wand-pro'
+                );
+            default:
+                return __(
+                    "That licence key wasn't recognised. Check it for typos, or whether it's already in use on another site.",
+                    'wp-wand-pro'
+                );
+        }
     }
 
     /**

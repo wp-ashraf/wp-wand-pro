@@ -118,12 +118,16 @@ export default function App() {
 				setError( res.error );
 				return;
 			}
-			setError( '' );
+			// Activated, but the Pro templates didn't come down. Not a failure — say so plainly
+			// rather than showing a clean success over a half-finished state.
+			setError( res && res.warning ? res.warning : '' );
 			setKey( '' );
 			refresh( res );
 		},
 		onError: ( e ) =>
-			setError( e.message || __( 'Activation failed.', 'wp-wand' ) ),
+			setError(
+				e?.error || e?.message || __( 'Activation failed.', 'wp-wand' )
+			),
 	} );
 
 	const deactivateMut = useMutation( {
