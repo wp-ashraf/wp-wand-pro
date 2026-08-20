@@ -5,10 +5,15 @@
 /.gitignore
 /.distignore
 /.DS_Store
+/.vscode
 /node_modules
+/openspec
 /assets/src
+/assets/js
+/assets/css
 /webpack.config.js
 /package.json
 /package-lock.json
 /postcss.config.js
 /.eslintrc.js
+/GEMINI.md

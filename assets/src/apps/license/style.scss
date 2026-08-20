@@ -3,13 +3,26 @@
  * (see feedback-scope-all-css memory).
  */
 .wpwl {
+	// Inter is not fetched from a webfont host (no third-party request from wp-admin), so every
+	// rule below reads this one token and degrades to the platform UI font when Inter is absent.
+	--wpwand-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+	// Form controls never inherit font-family on their own, so without this an input or button
+	// renders in the browser default while everything around it uses --wpwand-font. Scoped under the
+	// app root, so it cannot reach wp-admin's own controls.
+	input,
+	textarea,
+	select,
+	button {
+		font-family: inherit;
+	}
 	--wpwl-brand: #3767fb;
 	--wpwl-text: #18181b;
 	--wpwl-muted: #6b7280;
 	--wpwl-border: #e4e4e7;
 	--wpwl-divider: rgba( 22, 22, 23, 0.08 );
 
-	font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+	font-family: var( --wpwand-font );
 	color: var( --wpwl-text );
 	max-width: 560px;
 	margin: 64px auto 40px;
@@ -156,7 +169,7 @@
 	border: 1px solid var( --wpwl-border );
 	border-radius: 8px;
 	padding: 0 14px;
-	font: 400 14px/44px 'Inter', sans-serif;
+	font: 400 14px/44px var( --wpwand-font );
 	color: var( --wpwl-text );
 
 	&:focus {
@@ -173,7 +186,7 @@
 	padding: 0 22px;
 	border-radius: 8px;
 	border: 1px solid transparent;
-	font: 600 14px/44px 'Inter', sans-serif;
+	font: 600 14px/44px var( --wpwand-font );
 	cursor: pointer;
 	white-space: nowrap;
 

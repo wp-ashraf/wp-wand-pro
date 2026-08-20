@@ -44,7 +44,14 @@ final class SeoController extends AbstractController
         );
 
         if (is_object($content) && isset($content->error)) {
-            $msg = isset($content->error->message) ? (string) $content->error->message : __('Failed.', 'wp-wand-pro');
+            // The raw provider error is a JSON blob (and carries the truncated API key); seo/index.js
+            // window.alert()s whatever lands in `error`, so it has to be a sentence. ErrorFormatter is
+            // the free plugin's, so fall back to the plain line if free is somehow not loaded.
+            $fallback = __('Could not write a meta description. Please try again.', 'wp-wand-pro');
+            $msg      = class_exists('WPWand\\Generation\\ErrorFormatter')
+                ? \WPWand\Generation\ErrorFormatter::humanize($content->error, $fallback)
+                : $fallback;
+
             return new WP_REST_Response(['error' => $msg], 200);
         }
 

@@ -49,7 +49,8 @@ class TalaClient
      * The failure behind the most recent call.
      *
      * reason is 'network' (never reached the server), 'http' (reached it, got an error status),
-     * 'empty' (200 with nothing usable) or 'refused' (the server answered, and said no).
+     * 'empty' (200 with nothing usable), 'garbled' (200 with a body that isn't JSON — a WAF or
+     * maintenance page) or 'refused' (the server answered, and said no).
      *
      * @return array{reason:string, detail:string}|null
      */
@@ -160,6 +161,16 @@ class TalaClient
         }
 
         $decoded = json_decode($body, $assoc);
+
+        // A parse failure also returns null, so without this branch an HTML WAF/maintenance page was
+        // indistinguishable from the server genuinely answering "no" — and the customer was told
+        // their key was invalid. json_decode('false') sets JSON_ERROR_NONE, so a real refusal still
+        // falls through below.
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->last_error = ['reason' => 'garbled', 'detail' => json_last_error_msg()];
+            return false;
+        }
+
         if ($decoded === false || $decoded === null) {
             $this->last_error = ['reason' => 'refused', 'detail' => ''];
         }

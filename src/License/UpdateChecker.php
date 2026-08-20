@@ -175,6 +175,21 @@ class UpdateChecker
             $res->new_version = $remote->version;
             $res->package     = $remote->download_url ?? '';
 
+            // Without requires_php core has nothing to block on, so a PHP 7.4 site happily installs
+            // Pro 2.0.0 and then loses every Pro feature with no way back. Core reads this off the
+            // update row, refuses the install and prints "requires PHP 8.0" instead.
+            $res->requires_php = (string) ($remote->requires_php ?? '8.0');
+
+            if (!empty($remote->tested)) {
+                $res->tested = (string) $remote->tested;
+            }
+            if (!empty($remote->homepage)) {
+                $res->url = (string) $remote->homepage;
+            }
+            if (!empty($remote->icons)) {
+                $res->icons = (array) $remote->icons;
+            }
+
             $transient->response[$res->plugin] = $res;
         }
 

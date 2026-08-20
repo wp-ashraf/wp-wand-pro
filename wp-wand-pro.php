@@ -5,6 +5,8 @@
  * Plugin URI: https://wpwand.com/
  * Description: WP Wand Pro allows you to use the full potential of WP Wand with tons of extra features for quality content generation.
  * Version: 2.0.0
+ * Requires at least: 6.2
+ * Requires PHP: 7.4
  * Author: WP Wand
  * Author URI: https://wpwand.com/
  * Text Domain: wp-wand-pro
@@ -84,7 +86,15 @@ function wpwand_pro_load_plugin()
 
 function wpwand_pro_init()
 {
-    if (isset($_GET['force-check']) && check_admin_referer('wpwand_pro_force_update_check')) {
+    if (!is_admin() || !isset($_GET['wpwand-force-check'])) {
+        return;
+    }
+
+    // See the free plugin's copy of this: `force-check` is core's own parameter (update-core.php
+    // "Check again"), and check_admin_referer() wp_die()s rather than returning false, so matching
+    // the bare name killed core's link — from init, on every request, front end included.
+    $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+    if (current_user_can('update_plugins') && wp_verify_nonce($nonce, 'wpwand_pro_force_update_check')) {
         wp_clean_plugins_cache();
         wp_update_plugins();
         wp_safe_redirect(admin_url('plugins.php'));
@@ -140,11 +150,16 @@ function wpwand_pro_free_version_check()
     }
 
     // Let the user force WordPress to re-check for the free-plugin update, then bounce to Plugins.
-    if (isset($_GET['wpwand-recheck-free']) && check_admin_referer('wpwand_free_update_check')) {
-        wp_clean_plugins_cache();
-        wp_update_plugins();
-        wp_safe_redirect(admin_url('plugins.php'));
-        exit;
+    // wp_verify_nonce() rather than check_admin_referer(): the latter wp_die()s on a stale nonce, so
+    // a bookmarked or re-used link killed the page instead of quietly falling through to the notice.
+    if (isset($_GET['wpwand-recheck-free'])) {
+        $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+        if (current_user_can('update_plugins') && wp_verify_nonce($nonce, 'wpwand_free_update_check')) {
+            wp_clean_plugins_cache();
+            wp_update_plugins();
+            wp_safe_redirect(admin_url('plugins.php'));
+            exit;
+        }
     }
 
     if (!wpwand_pro_free_is_outdated()) {
@@ -157,7 +172,7 @@ function wpwand_pro_free_version_check()
         echo '<div class="notice notice-error"><p>';
         printf(
             /* translators: %s: URL that re-checks for the WP Wand update */
-            wp_kses(__('<strong>Action required:</strong> WP Wand Pro 2.0.0 requires WP Wand (free) 2.0.0 or higher. Your Pro features stay hidden until the free plugin is updated. <a href="%s">Update WP Wand</a>', 'wp-wand-pro'), ['a' => ['href' => []], 'strong' => []]),
+            wp_kses(__('<strong>Action required:</strong> WP Wand Pro 2.0.0 needs WP Wand (free) 2.0.0 or higher, and WP Wand 2.0.0 needs PHP 7.4 or higher. Your Pro features stay hidden until the free plugin is updated. <a href="%s">Update WP Wand</a>', 'wp-wand-pro'), ['a' => ['href' => []], 'strong' => []]),
             esc_url($recheck)
         );
         echo '</p></div>';
@@ -166,18 +181,17 @@ function wpwand_pro_free_version_check()
 add_action('init', 'wpwand_pro_free_version_check');
 
 
+/**
+ * First-install default for the Agency white-label switch.
+ *
+ * Both hooks used to update_option() this on every activation AND every deactivation, so a manual
+ * Pro update or a troubleshooting toggle silently turned an Agency customer's white-label setting
+ * back off. The option belongs to the free plugin (SettingsController), so Pro only seeds it when
+ * it does not exist yet and never touches it again. The deactivation hook wrote the same option
+ * plus wpwand_pro_activated, which nothing in either plugin reads — both are gone.
+ */
 function wpwand_pro_activation()
 {
-
-    update_option('wpwand_white_label_disable', 0);
-    update_option('wpwand_pro_activated', 'activation');
+    add_option('wpwand_white_label_disable', 0);
 }
 register_activation_hook(__FILE__, 'wpwand_pro_activation');
-
-function wpwand_pro_checker()
-{
-    update_option('wpwand_white_label_disable', 0);
-    update_option('wpwand_pro_activated', 'activation');
-}
-
-register_deactivation_hook(__FILE__, 'wpwand_pro_checker');

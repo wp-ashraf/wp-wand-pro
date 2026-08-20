@@ -62,14 +62,23 @@ final class LicensePage
         $asset = require $asset_file;
 
         wp_enqueue_script(self::HANDLE, WPWANDPRO_NEW_URL . 'build/license.js', $asset['dependencies'], $asset['version'], true);
-        wp_enqueue_style('wpwand-inter-font', 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap', [], $asset['version']);
+        // No webfont request here on purpose: hitting fonts.googleapis.com from wp-admin is a
+        // third-party round trip nobody asked for and a wordpress.org review flag. Every rule in the
+        // stylesheet reads --wpwand-font, which names Inter first and then the platform UI stack, so
+        // a machine without Inter renders one consistent typeface rather than two.
         if (is_readable(WPWANDPRO_NEW_DIR . 'build/style-license.css')) {
             wp_enqueue_style(self::HANDLE, WPWANDPRO_NEW_URL . 'build/style-license.css', [], (string) filemtime(WPWANDPRO_NEW_DIR . 'build/style-license.css'));
         }
-        wp_localize_script(self::HANDLE, 'wpwandApi', [
-            'root'  => esc_url_raw(rest_url()),
-            'nonce' => wp_create_nonce('wp_rest'),
-        ]);
+        // Merge, never replace: the free plugin's assistant puts `brand` and `togglerPosition` on
+        // this same global from every admin screen, and wp_localize_script() would wipe both.
+        if (class_exists('\WPWand\Admin\ScriptConfig')) {
+            \WPWand\Admin\ScriptConfig::merge(self::HANDLE, \WPWand\Admin\ScriptConfig::base());
+        } else {
+            wp_localize_script(self::HANDLE, 'wpwandApi', [
+                'root'  => esc_url_raw(rest_url()),
+                'nonce' => wp_create_nonce('wp_rest'),
+            ]);
+        }
         if (function_exists('wp_set_script_translations')) {
             wp_set_script_translations(self::HANDLE, 'wp-wand-pro');
         }

@@ -61,7 +61,7 @@ import { renderMarkdown } from '../../shared/markdown';
 			'div',
 			'position:fixed;right:20px;bottom:20px;width:360px;max-width:92vw;z-index:99999;' +
 				'background:#fff;border:1px solid #e4e4e7;border-radius:12px;box-shadow:0 10px 34px rgba(0,0,0,.16);' +
-				'font-family:Inter,sans-serif;display:none;overflow:hidden;'
+				"font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;display:none;overflow:hidden;"
 		);
 
 		const head = el(
@@ -79,13 +79,13 @@ import { renderMarkdown } from '../../shared/markdown';
 		const body = el( 'div', 'padding:14px;' );
 		const ta = el(
 			'textarea',
-			'width:100%;min-height:80px;border:1px solid #e4e4e7;border-radius:8px;padding:10px;font-size:13px;'
+			'width:100%;min-height:80px;border:1px solid #e4e4e7;border-radius:8px;padding:10px;font-size:13px;font-family:inherit;'
 		);
 		ta.placeholder = 'Short brief about the product…';
 
 		const gen = el(
 			'button',
-			'margin-top:10px;width:100%;height:38px;background:#3767fb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;',
+			'margin-top:10px;width:100%;height:38px;background:#3767fb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;',
 			'Generate Content'
 		);
 		const out = el( 'div', 'margin-top:12px;' );
@@ -162,7 +162,7 @@ import { renderMarkdown } from '../../shared/markdown';
 		);
 		const ins = el(
 			'button',
-			'background:#fff;border:1px solid #e4e4e7;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;',
+			'background:#fff;border:1px solid #e4e4e7;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;',
 			'Insert'
 		);
 		ins.addEventListener( 'click', onInsert );
@@ -187,7 +187,7 @@ import { renderMarkdown } from '../../shared/markdown';
 		const btn = el(
 			'button',
 			'margin:8px 0;display:inline-flex;align-items:center;gap:6px;background:#3767fb;color:#fff;' +
-				'border:0;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;',
+				'border:0;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;',
 			'✨ Generate with AI'
 		);
 		btn.id = 'wpwand-wc-trigger';

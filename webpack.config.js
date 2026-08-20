@@ -6,6 +6,7 @@
  */
 const path = require( 'path' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
 module.exports = {
 	...defaultConfig,
@@ -20,5 +21,40 @@ module.exports = {
 	output: {
 		...defaultConfig.output,
 		path: path.resolve( __dirname, 'build' ),
+	},
+	// Same reasoning as the free plugin: the default mapping sends `react/jsx-runtime` to the
+	// `react-jsx-runtime` script handle, which WordPress only registers from 6.6, and a bundle
+	// carrying it renders a blank screen on anything older. Keep the two configs in step.
+	plugins: [
+		...defaultConfig.plugins.filter(
+			( plugin ) =>
+				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
+		),
+		new DependencyExtractionWebpackPlugin( {
+			injectPolyfill: false,
+			requestToExternal( request ) {
+				if (
+					request === 'react/jsx-runtime' ||
+					request === 'react/jsx-dev-runtime'
+				) {
+					return false;
+				}
+				return undefined;
+			},
+		} ),
+	],
+	resolve: {
+		...defaultConfig.resolve,
+		alias: {
+			...( defaultConfig.resolve && defaultConfig.resolve.alias ),
+			'react/jsx-runtime': path.resolve(
+				__dirname,
+				'assets/src/shared/jsx-runtime.js'
+			),
+			'react/jsx-dev-runtime': path.resolve(
+				__dirname,
+				'assets/src/shared/jsx-runtime.js'
+			),
+		},
 	},
 };

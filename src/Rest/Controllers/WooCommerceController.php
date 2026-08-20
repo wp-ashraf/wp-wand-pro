@@ -11,6 +11,16 @@ use WP_REST_Response;
  */
 final class WooCommerceController extends AbstractController
 {
+    /**
+     * The first provider error seen while generating this request, if any.
+     *
+     * text() used to drop it on the floor, so an invalid key, a quota error and an unreachable host
+     * all came back as "No response. Try again." — nothing the customer could act on.
+     *
+     * @var object|array|string|null
+     */
+    private $provider_error = null;
+
     public function register_routes(): void
     {
         register_rest_route($this->rest_namespace, '/woocommerce/product', [
@@ -25,6 +35,8 @@ final class WooCommerceController extends AbstractController
 
     public function generate(WP_REST_Request $request): WP_REST_Response
     {
+        $this->provider_error = null;
+
         if (!class_exists('WPWand\Generation\Generator')) {
             return new WP_REST_Response(['error' => __('Generator unavailable.', 'wp-wand-pro')], 503);
         }
@@ -43,7 +55,7 @@ final class WooCommerceController extends AbstractController
         ));
 
         if ($title === '' && $description === '') {
-            return new WP_REST_Response(['error' => __('No response. Try again.', 'wp-wand-pro')], 200);
+            return new WP_REST_Response(['error' => $this->failure_message()], 200);
         }
 
         return new WP_REST_Response([
@@ -52,9 +64,27 @@ final class WooCommerceController extends AbstractController
         ], 200);
     }
 
+    /**
+     * What to tell the customer when both generations came back empty: the real provider reason when
+     * we have one, otherwise the old generic line.
+     */
+    private function failure_message(): string
+    {
+        $fallback = __('No response. Try again.', 'wp-wand-pro');
+
+        if ($this->provider_error === null || !class_exists('WPWand\Generation\ErrorFormatter')) {
+            return $fallback;
+        }
+
+        return \WPWand\Generation\ErrorFormatter::humanize($this->provider_error, $fallback);
+    }
+
     private function text($content): string
     {
         if (is_object($content) && isset($content->error)) {
+            if ($this->provider_error === null) {
+                $this->provider_error = $content->error;
+            }
             return '';
         }
         if (is_object($content) && isset($content->choices[0])) {

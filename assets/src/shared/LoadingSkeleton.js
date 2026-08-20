@@ -22,7 +22,7 @@ const CSS = `
 .wpwand-skel-row{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid #f1f2f4}
 .wpwand-skel-line{display:block;height:12px;width:180px;border-radius:5px;background:#eef0f2}
 .wpwand-skel-input{display:block;height:38px;max-width:420px;border:1px solid #e5e7eb;border-radius:6px;background:linear-gradient(90deg,#f3f4f6 25%,#fafafa 37%,#f3f4f6 63%);background-size:400% 100%;animation:wpwand-skel-shine 1.4s ease infinite}
-.wpwand-skel-spin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#6b7280;font-size:13px;font-family:Inter,-apple-system,sans-serif;z-index:2}
+.wpwand-skel-spin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#6b7280;font-size:13px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;z-index:2}
 .wpwand-skel-spin i{width:26px;height:26px;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:wpwand-skel-spin .8s linear infinite;display:block}
 @keyframes wpwand-skel-shine{0%{background-position:100% 0}100%{background-position:-100% 0}}
 @keyframes wpwand-skel-spin{to{transform:rotate(360deg)}}

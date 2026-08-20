@@ -7,7 +7,7 @@
     "scripts": {
         "start": "wp-scripts start",
         "build": "wp-scripts build",
-        "lint:js": "wp-scripts lint-js",
+        "lint:js": "wp-scripts lint-js assets/src",
         "format": "wp-scripts format"
     },
     "dependencies": {
@@ -15,6 +15,7 @@
         "marked": "^18.0.5"
     },
     "devDependencies": {
+        "@wordpress/babel-plugin-import-jsx-pragma": "^5.53.0",
         "@wordpress/scripts": "^30.0.0"
     }
 }
