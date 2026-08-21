@@ -62,7 +62,7 @@ export default function LoadingSkeleton( { title, tabs = [], rows = 4, label } )
 					</div>
 					<div className="wpwand-skel-spin">
 						<i />
-						<span>{ label || __( 'Loading…', 'wp-wand' ) }</span>
+						<span>{ label || __( 'Loading…', 'wp-wand-pro' ) }</span>
 					</div>
 				</div>
 			</div>

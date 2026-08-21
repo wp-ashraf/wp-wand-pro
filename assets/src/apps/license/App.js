@@ -12,11 +12,11 @@ import { api } from '../../shared/apiClient';
 import LoadingSkeleton from '../../shared/LoadingSkeleton';
 
 const TIER_LABELS = {
-	agency: __( 'Agency', 'wp-wand' ),
-	growth: __( 'Growth', 'wp-wand' ),
-	solo: __( 'Solo', 'wp-wand' ),
-	pro: __( 'Pro', 'wp-wand' ),
-	none: __( 'Not activated', 'wp-wand' ),
+	agency: __( 'Agency', 'wp-wand-pro' ),
+	growth: __( 'Growth', 'wp-wand-pro' ),
+	solo: __( 'Solo', 'wp-wand-pro' ),
+	pro: __( 'Pro', 'wp-wand-pro' ),
+	none: __( 'Not activated', 'wp-wand-pro' ),
 };
 
 /**
@@ -43,17 +43,17 @@ function UpdateBox() {
 			<div className="wpwl-update__row">
 				<div>
 					<div className="wpwl-update__title">
-						{ __( 'Plugin updates', 'wp-wand' ) }
+						{ __( 'Plugin updates', 'wp-wand-pro' ) }
 					</div>
 					<div className="wpwl-update__sub">
 						{ isLoading
-							? __( 'Checking…', 'wp-wand' )
-							: __( 'Installed version:', 'wp-wand' ) +
+							? __( 'Checking…', 'wp-wand-pro' )
+							: __( 'Installed version:', 'wp-wand-pro' ) +
 							  ' ' +
 							  ( data?.current || '—' ) +
 							  ( available
 									? ' · ' +
-									  __( 'Latest:', 'wp-wand' ) +
+									  __( 'Latest:', 'wp-wand-pro' ) +
 									  ' ' +
 									  data.latest
 									: '' ) }
@@ -65,29 +65,29 @@ function UpdateBox() {
 					onClick={ () => checkMut.mutate() }
 				>
 					{ checkMut.isPending
-						? __( 'Checking…', 'wp-wand' )
-						: __( 'Check for updates', 'wp-wand' ) }
+						? __( 'Checking…', 'wp-wand-pro' )
+						: __( 'Check for updates', 'wp-wand-pro' ) }
 				</button>
 			</div>
 
 			{ available ? (
 				<div className="wpwl-update__avail">
 					<span>
-						{ __( 'A new version', 'wp-wand' ) } ({ data.latest }){ ' ' }
-						{ __( 'is available.', 'wp-wand' ) }
+						{ __( 'A new version', 'wp-wand-pro' ) } ({ data.latest }){ ' ' }
+						{ __( 'is available.', 'wp-wand-pro' ) }
 					</span>
 					<a
 						className="wpwl-btn wpwl-btn--primary"
 						href={ data.updates_url }
 					>
-						{ __( 'Go to updates', 'wp-wand' ) }
+						{ __( 'Go to updates', 'wp-wand-pro' ) }
 					</a>
 				</div>
 			) : (
 				! isLoading &&
 				! checkMut.isPending && (
 					<div className="wpwl-update__ok">
-						{ __( 'You’re on the latest version.', 'wp-wand' ) }
+						{ __( 'You’re on the latest version.', 'wp-wand-pro' ) }
 					</div>
 				)
 			) }
@@ -126,7 +126,7 @@ export default function App() {
 		},
 		onError: ( e ) =>
 			setError(
-				e?.error || e?.message || __( 'Activation failed.', 'wp-wand' )
+				e?.error || e?.message || __( 'Activation failed.', 'wp-wand-pro' )
 			),
 	} );
 
@@ -142,7 +142,7 @@ export default function App() {
 	if ( isLoading ) {
 		return (
 			<LoadingSkeleton
-				title={ __( 'WP Wand License', 'wp-wand' ) }
+				title={ __( 'WP Wand License', 'wp-wand-pro' ) }
 				rows={ 3 }
 			/>
 		);
@@ -158,7 +158,7 @@ export default function App() {
 					✦
 				</span>
 				<h1 className="wpwl__title">
-					{ __( 'WP Wand License', 'wp-wand' ) }
+					{ __( 'WP Wand License', 'wp-wand-pro' ) }
 				</h1>
 			</div>
 			{ /* Anchor so WP relocates admin notices below the header, not into the flex row. */ }
@@ -178,18 +178,18 @@ export default function App() {
 									{ active
 										? __(
 												'Your license is active',
-												'wp-wand'
+												'wp-wand-pro'
 										  )
-										: __( 'No active license', 'wp-wand' ) }
+										: __( 'No active license', 'wp-wand-pro' ) }
 								</div>
 								<div className="wpwl-status__sub">
 									{ active
-										? __( 'Plan:', 'wp-wand' ) +
+										? __( 'Plan:', 'wp-wand-pro' ) +
 										  ' ' +
 										  ( TIER_LABELS[ tier ] || tier )
 										: __(
 												'Enter your purchase key to unlock the Pro features.',
-												'wp-wand'
+												'wp-wand-pro'
 										  ) }
 								</div>
 							</div>
@@ -210,10 +210,10 @@ export default function App() {
 									onClick={ () => deactivateMut.mutate() }
 								>
 									{ deactivateMut.isPending
-										? __( 'Deactivating…', 'wp-wand' )
+										? __( 'Deactivating…', 'wp-wand-pro' )
 										: __(
 												'Deactivate license',
-												'wp-wand'
+												'wp-wand-pro'
 										  ) }
 								</button>
 							</div>
@@ -231,7 +231,7 @@ export default function App() {
 									value={ key }
 									placeholder={ __(
 										'Paste your license key',
-										'wp-wand'
+										'wp-wand-pro'
 									) }
 									onChange={ ( e ) =>
 										setKey( e.target.value )
@@ -246,8 +246,8 @@ export default function App() {
 									}
 								>
 									{ activateMut.isPending
-										? __( 'Activating…', 'wp-wand' )
-										: __( 'Activate', 'wp-wand' ) }
+										? __( 'Activating…', 'wp-wand-pro' )
+										: __( 'Activate', 'wp-wand-pro' ) }
 								</button>
 							</form>
 						) }
@@ -259,14 +259,14 @@ export default function App() {
 			<p className="wpwl-help">
 				{ __(
 					'Your license key was emailed to you after purchase. Need help?',
-					'wp-wand'
+					'wp-wand-pro'
 				) }{ ' ' }
 				<a
 					href="https://wpwand.com/contact"
 					target="_blank"
 					rel="noreferrer"
 				>
-					{ __( 'Contact support', 'wp-wand' ) }
+					{ __( 'Contact support', 'wp-wand-pro' ) }
 				</a>
 			</p>
 		</div>
