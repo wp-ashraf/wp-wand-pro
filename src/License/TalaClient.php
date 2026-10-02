@@ -11,13 +11,17 @@ namespace WPWand\License;
  * new-architecture replacement for the request bodies that were scattered through inc/tala.php
  * (wpwand_pro_check_tala / _deactivate / _get_data and WPWandUdChecker::request).
  *
- * The wire contract is IDENTICAL to legacy on purpose — same base URL, same `plugin` ids
+ * The wire contract is IDENTICAL to legacy on purpose — same path, same `plugin` ids
  * (68333 for license calls, "wpwand" for update checks), same param names — so existing
  * activations keep working with no server-side change.
+ *
+ * Only the host has moved. It was tala.finestwp.co until that domain lapsed on 2026-09-18; the
+ * same server answers on tala.thefarhan.com. Builds that still carry the old host are sent here
+ * by the free plugin (inc/legacy-host.php there), which is how they receive this one.
  */
 class TalaClient
 {
-    private const BASE = 'https://tala.finestwp.co/wp-json/fdl/v2/envato-plugin';
+    private const BASE = 'https://tala.thefarhan.com/wp-json/fdl/v2/envato-plugin';
 
     /** Envato item id used for license endpoints. */
     private const LICENSE_PLUGIN = '68333';
