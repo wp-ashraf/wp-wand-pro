@@ -2,7 +2,7 @@
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -63,6 +63,14 @@ Almost always the free plugin is still on an older version. Pro 2.0.0 needs WP W
 Yes, while the licence is active. They show up on the Plugins screen like any other plugin update.
 
 == Changelog ==
+
+= 2.1.0 =
+* Changed: the licence server moved to tala.thefarhan.com. Your key and your activation carry over. Nothing to do on your side.
+* Fixed: an unreadable reply from the licence server was reported as "your key is invalid". It says what actually happened now.
+* Fixed: the SEO panel and the WooCommerce writer say what went wrong instead of a raw error or "No response. Try again."
+* Fixed: the licence screen can be translated, switching Pro off keeps an Agency customer's white-label settings, and a pre-1.2.7 Growth key is no longer read as Solo.
+* Improved: works down to WordPress 6.2 and PHP 7.4, matching the free plugin.
+* Needs WP Wand (free) 2.0.0 or newer, as before.
 
 = 2.0.0 =
 * New: Rebuilt on the React + REST architecture alongside WP Wand 2.0.0.
